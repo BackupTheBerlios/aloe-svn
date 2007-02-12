@@ -156,6 +156,15 @@
 			Name="Win32"
 			Filter="">
 			<File
+				RelativePath="..\Win32\Win32CFactory.h">
+			</File>
+			<File
+				RelativePath="..\Win32\Win32CWindow.h">
+			</File>
+			<File
+				RelativePath="..\Win32\Win32CWindowClass.h">
+			</File>
+			<File
 				RelativePath="..\Win32\Win32System.cpp">
 			</File>
 		</Filter>
