@@ -183,6 +183,10 @@ namespace Aloe {
 
 #define aloe__pointer( T ) Aloe::Utils::SmartPtr< Aloe::T >
 
+#define aloe__array_of( T ) Aloe::Utils::ArrayOf< aloe__##T >
+
+#define aloe__array_of_pointer( T ) Aloe::Utils::ArrayOf< Aloe::Utils::SmartPtr< Aloe::T > >
+
 #define aloe__arg( Name, Kind, Type ) aloe__##Type
 
 #define aloe__tuple0() Aloe::Types::Tuple<>

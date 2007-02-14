@@ -116,8 +116,8 @@ int main()
 
         aloe__try {
         
-            SmartPtr< Aloe::IStream > stream = Aloe::Root[ Aloe::IStorage::CreateStream ]( aloe__string("dupa.bmp") );
-            stream[ Aloe::IStream::Open ]( Aloe::IStream::READ | Aloe::IStream::BINARY );
+            SmartPtr<> stream = Aloe::Root[ Aloe::IStorage::Create ]( aloe__string("dupa.bmp"), 0L );
+            stream[ Aloe::IStream::Open ]();
     
         } aloe__finish;
         

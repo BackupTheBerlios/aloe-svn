@@ -4,6 +4,9 @@
 #include "Aloe/aloe.h"
 
 namespace Aloe {
+
+    struct IWindow;
+    struct IWindowEvents;
     
     aloe__interface( IWindow )
     {
@@ -104,119 +107,6 @@ namespace Aloe {
     aloe__runtime_method( IWindowEvents, Motion );
     aloe__runtime_method( IWindowEvents, Button );
     aloe__runtime_method( IWindowEvents, DoubleClick );
-    
-    aloe__interface( IStream )
-    {
-        aloe__iid( IStream );
-
-        enum OpenMode {
-            TEXT = 0x0,
-            BINARY = 0x1,
-            READ = 0x2,
-            APPEND = 0x4,
-            NEW = 0x8
-        };
-
-        aloe__method( IStream, Open
-                , type( Bool )
-                , tuple1(
-                    arg( mode, In, type( Long ))
-                    )
-                );
-        
-        aloe__method( IStream, Close
-                , ____
-                , ____
-                );
-        
-        aloe__method( IStream, Flush
-                , ____
-                , ____
-                );
-        
-        aloe__method( IStream, GetPos
-                , type( Long )
-                , ____
-                );
-        
-        aloe__method( IStream, SetPos
-                , ____
-                , tuple1(
-                    arg( position, In, type( Long ))
-                    )
-                );
-        
-        aloe__method( IStream, Seek
-                , ____
-                , tuple2(
-                    arg( distance, In, type( Long )),
-                    arg( mode, In, type( Long ))
-                    )
-                );
-        
-        aloe__method( IStream, Read
-                , type( Long )
-                , tuple2(
-                    arg( buffer, In, type( RawPointer )),
-                    arg( bytes, In, type( Long ))
-                    )
-                );
-        
-        aloe__method( IStream, Write
-                , type( Long )
-                , tuple2(
-                    arg( buffer, In, type( RawPointer )),
-                    arg( bytes, In, type( Long ))
-                    )
-                );
-    };
-    
-    aloe__interface( IStorage )
-    {
-        aloe__iid( IStorage );
-
-        aloe__method( IStorage, CreateStream
-                , pointer( IStream )
-                , tuple1(
-                    arg( filename, In, type( String ))
-                    )
-                );
-        
-        aloe__method( IStorage, CreateStorage
-                , pointer( IStorage )
-                , tuple1(
-                    arg( dirname, In, type( String ))
-                    )
-                );
-        
-        aloe__method( IStorage, StreamExists
-                , type( Bool )
-                , tuple1(
-                    arg( filename, In, type( String ))
-                    )
-                );
-        
-        aloe__method( IStorage, StorageExists
-                , type( Bool )
-                , tuple1(
-                    arg( dirname, In, type( String ))
-                    )
-                );
-        
-        aloe__method( IStorage, RemoveStream
-                , type( Bool )
-                , tuple1(
-                    arg( filename, In, type( String ))
-                    )
-                );
-        
-        aloe__method( IStorage, RemoveStorage
-                , type( Bool )
-                , tuple1(
-                    arg( dirname, In, type( String ))
-                    )
-                );
-    };
 
 };//Aloe
 

@@ -134,6 +134,9 @@
 				RelativePath="..\Aloe\aloeFormat.h">
 			</File>
 			<File
+				RelativePath="..\Aloe\aloeGraphics.h">
+			</File>
+			<File
 				RelativePath="..\Aloe\aloePP.h">
 			</File>
 			<File
@@ -143,10 +146,19 @@
 				RelativePath="..\Aloe\aloePropertyMap.h">
 			</File>
 			<File
+				RelativePath="..\Aloe\aloeRaster.h">
+			</File>
+			<File
+				RelativePath="..\Aloe\aloeStorage.h">
+			</File>
+			<File
 				RelativePath="..\Aloe\aloeSystem.h">
 			</File>
 			<File
 				RelativePath="..\Aloe\aloeTypes.h">
+			</File>
+			<File
+				RelativePath="..\Aloe\aloeWidget.h">
 			</File>
 			<File
 				RelativePath="..\Aloe\aloeWin32.h">

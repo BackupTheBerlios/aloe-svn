@@ -150,9 +150,53 @@ namespace Aloe {
     // typy wyzsze
     namespace Types {
 
+        union Color32;
         struct Point2i;
         struct Vector2i;
         struct Recti;
+
+        union Color32
+        {
+            struct
+            {
+                UByte red;
+                UByte green;
+                UByte blue;
+                UByte alpha;
+            };
+            ULong longWord;
+
+            Color32( ULong lw ) : longWord( lw )
+            {}
+
+            Color32( UByte r, UByte g, UByte b, UByte a ) : red(r), green(g), blue(b), alpha(a)
+            {}
+            
+            Color32( Int r, Int g, Int b, Int a ) : red(r), green(g), blue(b), alpha(a)
+            {}
+            
+            Color32( Float r, Float g, Float b, Float a )
+                : red  ( static_cast< UByte >( r*255.0 ))
+                , green( static_cast< UByte >( g*255.0 ))
+                , blue ( static_cast< UByte >( b*255.0 ))
+                , alpha( static_cast< UByte >( a*255.0 ))
+            {}
+            
+            UByte Redub() { return red; }
+            UByte Greenub() { return green; }
+            UByte Blueub() { return blue; }
+            UByte Alphaub() { return alpha; }
+
+            Int Redi()   { return static_cast< Int >( red ); }
+            Int Greeni() { return static_cast< Int >( green ); }
+            Int Bluei()  { return static_cast< Int >( blue ); }
+            Int Alphai() { return static_cast< Int >( alpha ); }
+            
+            Float Redf()   { return static_cast< Float >( red )/255.0; }
+            Float Greenf() { return static_cast< Float >( green )/255.0; }
+            Float Bluef()  { return static_cast< Float >( blue )/255.0; }
+            Float Alphaf() { return static_cast< Float >( alpha )/255.0; }
+        };
 
         struct Point2i
         {

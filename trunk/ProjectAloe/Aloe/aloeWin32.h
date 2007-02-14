@@ -2,6 +2,10 @@
 #define ALOE_INCLUDED_ALOE_WIN32_H
 
 #include "Aloe/aloeSystem.h"
+#include "Aloe/aloeStorage.h"
+#include "Aloe/aloeRaster.h"
+#include "Aloe/aloeGraphics.h"
+#include "Aloe/aloeWidget.h"
 
 #define MEAN_AND_LEAN
 #include <windows.h>
@@ -16,6 +20,12 @@
 
 namespace Aloe {
     namespace Win32 {
+
+        struct IMessageLoop;
+        struct IWindowFactory;
+        struct IWindowClass;
+        struct IWindow;
+        struct IWindowEvents;
 
         extern Utils::SmartPtr< IProvider > Initialize( HINSTANCE hInstance );
 
