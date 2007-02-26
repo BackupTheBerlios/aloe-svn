@@ -125,12 +125,12 @@ namespace Aloe {
 
                         operator ValueType ()
                         {
-                            return prop.g( index, get() );
+                            return prop.g( get(), index );
                         }
 
                         ValueType value()
                         {
-                            return prop.g( index, get() );
+                            return prop.g( get(), index );
                         }
 
                         AppendRet operator += ( const AppendArg &x )

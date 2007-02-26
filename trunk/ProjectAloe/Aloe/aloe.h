@@ -351,34 +351,63 @@ namespace Aloe {
     };//Detail
     
     inline Types::Identifier GetIdOfName( const Types::String &csName );
+
+    struct IProvider;
+    struct IFactory;
+    struct IEvent;
+    struct IEventSource;
+    struct IStringsDictionary;
+    struct IStringEncoding;
+    struct IPropertyMap;
     
     struct IProvider
     {
-        aloe__iid__const( IProvider, 0x2 );
+        aloe__iid__const( IProvider, 0x1 );
         
         virtual Aloe::Types::Bool Query( const Aloe::Types::Identifier &iid, Aloe::Types::RawPointer &ptr, Aloe::IRefCount * &pCount ) = 0;
         virtual Aloe::Types::Bool QueryCounterAddRef( Aloe::IRefCount * &pCount ) = 0;
     };
     
-    aloe__interface( IIdentifierFactory )
+    aloe__interface( IFactory )
     {
-        aloe__iid__const( IIdentifierFactory, 0x1 );
+        aloe__iid__const( IFactory, 0x2 );
 
-        virtual Types::Identifier getIdOfName( const Types::String &csName ) = 0;
+        aloe__prop( IFactory, IdOfName
+                , map , type( String )
+                , get , ____, type( Identifier )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IFactory, Parent
+                , ____, ____
+                , get , put , pointer( IFactory )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IFactory, Create
+                , map , type( String )
+                , get , put , pointer( IFactory )
+                , ____, ____, ____
+                , ____, ____, ____
+                , call, pointer( IProvider ), tuple1(
+                    arg( args, In, pointer( IPropertyMap ))
+                    ));
+
+        aloe__method( IFactory, Load
+                , type( Bool )
+                , tuple1(
+                    arg( library, In, type( String ))
+                    ));
+
     };
     
-    extern Utils::SmartPtr< IProvider > Root;
+    extern Utils::SmartPtr< IFactory > Root;
 
     inline Types::Identifier GetIdOfName( const Types::String &csName )
     {
-        static Utils::SmartPtr< IIdentifierFactory > factory;
-        
-        if ( !factory )
-        {
-            factory.QueryFrom( Root );
-        }
-
-        return factory->getIdOfName( csName );
+        return Root[ IFactory::IdOfName ][ csName ];
     }
     
     
@@ -392,8 +421,6 @@ namespace Aloe {
                 );
     };
     
-    struct IEventSource;
-
     namespace Detail {
     
         struct Event
@@ -511,6 +538,68 @@ namespace Aloe {
                 , ____, ____, ____
                 , ____, ____, ____ );
     
+    };
+
+    aloe__interface( IPropertyMap )
+    {
+        aloe__iid__const( IPropertyMap, 0x8 );
+
+        aloe__prop( IPropertyMap, Int
+                , map, tuple2( type( String ), type( Int ))
+                , get, put, type( Int )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IPropertyMap, Float
+                , map, tuple2( type( String ), type( Int ))
+                , get, put, type( Float )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IPropertyMap, String
+                , map, tuple2( type( String ), type( Int ))
+                , get, put, type( String )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+        
+        aloe__prop( IPropertyMap, Object
+                , map, tuple2( type( String ), type( Int ))
+                , get, put, pointer( IProvider )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IPropertyMap, Ints
+                , map, tuple2( type( String ), type( Int ))
+                , get, put, array_of( type( Int ))
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IPropertyMap, Floats
+                , map, tuple2( type( String ), type( Int ))
+                , get, put, array_of( type( Float ))
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IPropertyMap, Strings
+                , map, tuple2( type( String ), type( Int ))
+                , get, put, array_of( type( String ))
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IPropertyMap, Objects
+                , map, tuple2( type( String ), type( Int ))
+                , get, put, array_of_pointer( IProvider )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+        
     };
 
     namespace Detail {

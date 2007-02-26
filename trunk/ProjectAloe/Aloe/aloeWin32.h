@@ -4,8 +4,7 @@
 #include "Aloe/aloeSystem.h"
 #include "Aloe/aloeStorage.h"
 #include "Aloe/aloeRaster.h"
-#include "Aloe/aloeGraphics.h"
-#include "Aloe/aloeWidget.h"
+#include "Aloe/aloeUI.h"
 
 #define MEAN_AND_LEAN
 #include <windows.h>
@@ -27,7 +26,7 @@ namespace Aloe {
         struct IWindow;
         struct IWindowEvents;
 
-        extern Utils::SmartPtr< IProvider > Initialize( HINSTANCE hInstance );
+        extern Utils::SmartPtr< IFactory > Initialize( HINSTANCE hInstance );
 
         aloe__interface( IMessageLoop )
         {

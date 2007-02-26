@@ -8,7 +8,7 @@
 
 namespace Aloe {
 
-    Utils::SmartPtr<> Root;
+    Utils::SmartPtr< IFactory > Root;
 
 };//Aloe
 
@@ -94,6 +94,7 @@ int main()
     using Aloe::Utils::VectorOf;
     namespace Win32 = Aloe::Win32;
     namespace Types = Aloe::Types;
+    namespace Utils = Aloe::Utils;
 
     Aloe::Root = Win32::Initialize( ::GetModuleHandle(NULL) );
 
@@ -119,6 +120,59 @@ int main()
             SmartPtr<> stream = Aloe::Root[ Aloe::IStorage::Create ]( aloe__string("dupa.bmp"), 0L );
             stream[ Aloe::IStream::Open ]();
     
+        } aloe__finish;
+
+        aloe__try {
+            
+            Aloe::Root[ IFactory::Load ](aloe__string("Win32Client.dll"));
+            Aloe::Root[ IFactory::Load ](aloe__string("MeshLayout.dll"));
+            Aloe::Root[ IFactory::Load ](aloe__string("TargetLayout.dll"));
+            Aloe::Root[ IFactory::Load ](aloe__string("Widget.dll"));
+            Aloe::Root[ IFactory::Load ](aloe__string("ButtonDesigner.dll"));
+            Aloe::Root[ IFactory::Load ](aloe__string("LayoutDesigner.dll"));
+            Aloe::Root[ IFactory::Load ](aloe__string("UIDispatcher.dll"));
+
+            SmartPtr<> window  = Root[ IFactory::Create ][aloe__string("Window")]( Types::None() );
+            SmartPtr<> widget  = Root[ IFactory::Create ][aloe__string("Widget")]( Types::None() );
+            SmartPtr<> button  = Root[ IFactory::Create ][aloe__string("ButtonDesigner")]( Types::None() );
+            SmartPtr<> label   = Root[ IFactory::Create ][aloe__string("LabelDesigner")]( Types::None() );
+            SmartPtr<> layout  = Root[ IFactory::Create ][aloe__string("MeshLayout")]( Types::None() );
+            SmartPtr<> line_x1 = Root[ IFactory::Create ][aloe__string("MeshLine")]( Types::None() );
+            SmartPtr<> line_x2 = Root[ IFactory::Create ][aloe__string("MeshLine")]( Types::None() );
+            SmartPtr<> line_y1 = Root[ IFactory::Create ][aloe__string("MeshLine")]( Types::None() );
+            SmartPtr<> line_y2 = Root[ IFactory::Create ][aloe__string("MeshLine")]( Types::None() );
+            SmartPtr<> cell    = Root[ IFactory::Create ][aloe__string("MeshCell")]( Types::None() );
+            SmartPtr<> uidisp  = Root[ IFactory::Create ][aloe__string("UIDispatcher")]( Types::None() );
+            
+            cell[ IMeshCell::HLineStart ] = line_x1[ IMeshLine::This ];
+            cell[ IMeshCell::VLineStart ] = line_y1[ IMeshLine::This ];
+            cell[ IMeshCell::HLineEnd ] = line_x2[ IMeshLine::This ];
+            cell[ IMeshCell::VLineEnd ] = line_y2[ IMeshLine::This ];
+            
+            widget[ IFrameClient::Frame ] = cell[ IFrame::This ];
+            layout[ IFrameClient::Frame ] = window[ IFrame::This ];
+            window[ IContainer::Objects ] += widget;
+            window[ IEventSource::Listeners ] += uidisp;
+            
+            line_x1[ IMeshLine::Placement ] = Utils::makeTuple( 1, 5 );
+            line_x2[ IMeshLine::Placement ] = Utils::makeTuple( 2, 5 );
+            line_y1[ IMeshLine::Placement ] = Utils::makeTuple( 3, 5 );
+            line_y2[ IMeshLine::Placement ] = Utils::makeTuple( 4, 5 );
+            
+            layout[ IMeshLayout::HLines ] += line_x1[ IMeshLine::This ];
+            layout[ IMeshLayout::HLines ] += line_x2[ IMeshLine::This ];
+            layout[ IMeshLayout::VLines ] += line_y1[ IMeshLine::This ];
+            layout[ IMeshLayout::VLines ] += line_y2[ IMeshLine::This ];
+            layout[ IMeshLayout::Cells ]  += cell[ IMeshCell::This ];
+            
+            widget[ IGraphicsDesignerClient::Designers ] += button[ IGraphicsDesigner::This ];
+            widget[ IGraphicsDesignerClient::Designers ] += label[ IGraphicsDesigner::This ];
+            
+            widget[ IGraphicsDesignerClient::LayerOrder ][aloe__string("background")] = 100;
+            widget[ IGraphicsDesignerClient::LayerOrder ][aloe__string("label")] = 200;
+            widget[ IGraphicsDesignerClient::LayerOrder ][aloe__string("overlay")] = 300;
+
+
         } aloe__finish;
         
         Aloe::Root[ Win32::IMessageLoop::Run ]();

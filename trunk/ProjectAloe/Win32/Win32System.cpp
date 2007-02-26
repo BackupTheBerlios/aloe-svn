@@ -15,9 +15,9 @@ namespace Aloe {
        
         CWindow::DictWindows_t CWindow::s_dictWindows;
 
-        Utils::SmartPtr< IProvider > Initialize( HINSTANCE hInstance )
+        Utils::SmartPtr< IFactory > Initialize( HINSTANCE hInstance )
         {
-            return ( new CFactory )->__init__( hInstance );
+			return ( new CFactory )->__init__( hInstance )[ IFactory::This ];
         }
 
     };//Win32

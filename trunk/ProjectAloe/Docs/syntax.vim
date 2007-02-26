@@ -4,6 +4,9 @@
 :syn keyword cppType aloe__property_imp_put aloe__property_imp_get
 :syn keyword cppType aloe__property_imp_append aloe__property_imp_remove
 :syn keyword cppType aloe__property_imp_call
+:syn keyword cppType aloe__prop_map_imp_put aloe__prop_map_imp_get
+:syn keyword cppType aloe__prop_map_imp_append aloe__prop_map_imp_remove
+:syn keyword cppType aloe__prop_map_imp_call
 :syn keyword cppNumber aloe__iid
 :syn keyword cppNumber aloe__iid_of
 :syn keyword cppNumber aloe__iid__const

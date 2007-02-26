@@ -405,10 +405,50 @@ namespace Aloe {
         inline Recti operator + ( Recti r, const Vector2i &v ) { return ( r += v ); }
         inline Recti operator - ( Recti r, const Vector2i &v ) { return ( r -= v ); }
 
+        struct Sectori
+        {
+            Point2i start;
+            Point2i end;
+            
+            Sectori( Point2i s, Point2i e ) : start( s ), end( e ) {}
+            Sectori( Point2i s, Vector2i v ) : start( s ), end( s + v ) {}
+            Sectori( Vector2i v, Point2i e ) : start( e - v ), end( e ) {}
+
+            struct ProxyFrom
+            {
+                Sectori &sector;
+                ProxyFrom( Sectori &s ) : sector( s ) {}
+
+                ProxyFrom & operator = ( const Vector2i &v )
+                {
+                    sector.end = sector.start + v;
+                    return (*this);
+                }
+            };
+
+            struct ProxyTo
+            {
+                Sectori &sector;
+                ProxyTo( Sectori &s ) : sector( s ) {}
+
+                ProxyTo & operator = ( const Vector2i &v )
+                {
+                    sector.start = sector.end - v;
+                    return (*this);
+                }
+            };
+
+            ProxyFrom from() { return *this; }
+            ProxyFrom to() { return *this; }
+            
+            Vector2i from() const { return (end - start); }
+            Vector2i to() const { return (start - end); }
+        };
+
         struct Identifier
         {
             LongPointer lpIdent;            
-			Identifier() {}
+            Identifier() {}
             Identifier( LongPointer ident ) : lpIdent( ident ) {}
             Bool operator == ( const Identifier &o ) const { return (lpIdent == o.lpIdent); }
             Bool operator < ( const Identifier &o ) const { return (lpIdent < o.lpIdent); }
@@ -427,7 +467,7 @@ namespace Aloe {
             ALOE_PP_GENERATE_MAX( NONE, SEMICOLON, Types__Tuple__ctor );
 
             Tuple() {}
-            
+           
             template< ALOE_PP_TEMPLATE_MAX( NONE, COMMA, class, B,, ) >
                 Tuple( const Tuple< ALOE_PP_TEMPLATE_MAX( NONE, COMMA, getClass, B,, ) > &t )
                 : ALOE_PP_TEMPLATE_MAX( NONE, COMMA, initFrom, m_, t.m_, )
@@ -448,16 +488,16 @@ namespace Aloe {
 
         template< class Interface = IProvider > struct SmartPtr;
 
-#define ALOE_PP_make_tuple__definition( N ) \
+#define ALOE_PP_makeTuple__definition( N ) \
         template< ALOE_PP_TEMPLATE_R( N, NONE, COMMA, class, A, a, ) > \
             Types::Tuple< ALOE_PP_TEMPLATE_R( N, NONE, COMMA, getClass, A, a, ) > \
-            make_tuple( ALOE_PP_TEMPLATE_R( N, NONE, COMMA, byConstReference, A, a, ) ) \
+            makeTuple( ALOE_PP_TEMPLATE_R( N, NONE, COMMA, byConstReference, A, a, ) ) \
             { \
                 return Types::Tuple< ALOE_PP_TEMPLATE_R( N, NONE, COMMA, getClass, A, a, ) > \
                     ( ALOE_PP_TEMPLATE_R( N, NONE, COMMA, getValue, A, a, ) ); \
             }
     
-        ALOE_PP_GENERATE_MAX( NONE, SEMICOLON, make_tuple__definition );
+        ALOE_PP_GENERATE_MAX( NONE, SEMICOLON, makeTuple__definition );
             
     };
     
@@ -507,6 +547,10 @@ namespace Aloe {
             Aloe::IRefCount   *m_count;
 
             SmartPtr() : m_object(0), m_count(0)
+            {
+            }
+
+            SmartPtr( const Types::None & ) : m_object(0), m_count(0)
             {
             }
 

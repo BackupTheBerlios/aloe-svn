@@ -7,11 +7,13 @@ namespace Aloe {
         struct CFactory
             : Detail::Implementation
             < CFactory
-            , Detail::Interfaces< IIdentifierFactory, Win32::IWindowFactory, Win32::IMessageLoop >
+            , Detail::Interfaces< IFactory, Win32::IWindowFactory, Win32::IMessageLoop >
             , Detail::Bases< Detail::CRefCount > >
         {   
             HINSTANCE m_hInstance;
             DWORD m_lastError;
+            typedef std::map< Types::String, Utils::SmartPtr< IFactory > > DictFactory_t;
+            DictFactory_t m_dictFactory;
 
             Utils::SmartPtr<> __init__( HINSTANCE hInstance )
             {
@@ -20,7 +22,7 @@ namespace Aloe {
                 return Utils::SmartPtr<>( this, this );
             }
 
-            Types::Identifier getIdOfName( const Types::String &csName )
+            aloe__prop_map_imp_get( IFactory, IdOfName, csName )
             {
                 typedef std::map< Types::String, Types::Identifier > IdMap_t;
                 static IdMap_t s_idMap;
@@ -38,6 +40,53 @@ namespace Aloe {
                 }
             }
 
+            aloe__method_imp( IFactory, Load, argv )
+            {
+                aloe__extract1( Load, args, argv, library );
+
+                return false;
+            }
+            
+            aloe__property_imp_put( IFactory, Parent, parent )
+            {
+            }
+
+            aloe__property_imp_get( IFactory, Parent )
+            {
+                return Types::None();
+            }
+
+            aloe__prop_map_imp_put( IFactory, Create, index, cons )
+            {
+                m_dictFactory[ index ] = cons;
+            };
+
+            aloe__prop_map_imp_get( IFactory, Create, index )
+            {
+                DictFactory_t::iterator found = m_dictFactory.find( index );
+                if ( found != m_dictFactory.end() )
+                {
+                    return found->second;
+                }
+                else {
+                    return Types::None();
+                }
+            };
+
+            aloe__prop_map_imp_call( IFactory, Create, index, argv )
+            {
+                aloe__extract1( Create, args, argv, propMap );
+
+                DictFactory_t::iterator found = m_dictFactory.find( index );
+                if ( found != m_dictFactory.end() )
+                {
+                    return found->second[ IFactory::Create ][ index ]( argv );
+                }
+                else {
+                    return Types::None();
+                }
+            };
+            
             aloe__method_imp( Win32::IWindowFactory, CreateWindow, argv )
             {
                 aloe__extract8( CreateWindow, args, argv, className, classStyle,
