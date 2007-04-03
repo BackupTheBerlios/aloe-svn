@@ -48,18 +48,18 @@
 :syn match cppType /Types::Float32/
 :syn match cppType /Types::Float64/
 :syn match cppType /Types::BigFloat/
-:syn match cppType /Types::ULong/
-:syn match cppType /Types::UInt/
-:syn match cppType /Types::UShort/
-:syn match cppType /Types::UByte/
+:syn match cppType /Types::ULong /
+:syn match cppType /Types::UInt /
+:syn match cppType /Types::UShort*/
+:syn match cppType /Types::UByte*/
 :syn match cppType /Types::SizeType/
 :syn match cppType /Types::ClockType/
 :syn match cppType /Types::TimeType/
 :syn match cppType /Types::PtrDiffType/
 :syn match cppType /Types::LongLong/
-:syn match cppType /Types::Float/
-:syn match cppType /Types::Long/
-:syn match cppType /Types::Int/
+:syn match cppType /Types::Float /
+:syn match cppType /Types::Long /
+:syn match cppType /Types::Int /
 :syn match cppType /Types::Short/
 :syn match cppType /Types::Byte/
 :syn match cppType /Types::Bool/
