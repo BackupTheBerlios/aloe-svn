@@ -102,7 +102,7 @@ namespace Aloe {
 
                 struct Proxy : Aloe::Utils::SmartPtr< Interface >
                 {
-                    Property prop;
+                    mutable Property prop;
 
                     Proxy( Property *t, const Aloe::Utils::SmartPtr< Interface > &p )
                         : prop( *t )
@@ -115,12 +115,12 @@ namespace Aloe {
                         prop.s( get(), x );
                     }
 
-                    operator ValueType ()
+                    operator ValueType () const
                     {
                         return value();
                     }
 
-                    ValueType value()
+                    ValueType value() const
                     {
                         return prop.g( get() );
                     }
@@ -210,40 +210,42 @@ namespace Aloe {
 #define aloe__8( t ) t.m_8
 #define aloe__9( t ) t.m_9
 
-#define aloe__extract1( N, M, t, a1 ) \
-        const N##__##M##Type::T1 a1( aloe__1( t )); \
+#define aloe__extract0( I, N, M, t )
 
-#define aloe__extract2( N, M, t, a1, a2 ) \
-        aloe__extract1( N, M, t, a1 ); \
-        const N##__##M##Type::T2 a2( aloe__2( t ));
+#define aloe__extract1( I, N, M, t, a1 ) \
+        const I::N##__##M##Type::T1 a1( aloe__1( t )); \
 
-#define aloe__extract3( N, M, t, a1, a2, a3 ) \
-        aloe__extract2( N, M, t, a1, a2 ); \
-        const N##__##M##Type::T3 a3( aloe__3( t ));
+#define aloe__extract2( I, N, M, t, a1, a2 ) \
+        aloe__extract1( I, N, M, t, a1 ); \
+        const I::N##__##M##Type::T2 a2( aloe__2( t ));
 
-#define aloe__extract4( N, M, t, a1, a2, a3, a4 ) \
-        aloe__extract3( N, M, t, a1, a2, a3 ); \
-        const N##__##M##Type::T4 a4( aloe__4( t ));
+#define aloe__extract3( I, N, M, t, a1, a2, a3 ) \
+        aloe__extract2( I, N, M, t, a1, a2 ); \
+        const I::N##__##M##Type::T3 a3( aloe__3( t ));
 
-#define aloe__extract5( N, M, t, a1, a2, a3, a4, a5 ) \
-        aloe__extract4( N, M, t, a1, a2, a3, a4 ); \
-        const N##__##M##Type::T5 a5( aloe__5( t ));
+#define aloe__extract4( I, N, M, t, a1, a2, a3, a4 ) \
+        aloe__extract3( I, N, M, t, a1, a2, a3 ); \
+        const I::N##__##M##Type::T4 a4( aloe__4( t ));
 
-#define aloe__extract6( N, M, t, a1, a2, a3, a4, a5, a6 ) \
-        aloe__extract5( N, M, t, a1, a2, a3, a4, a5 ); \
-        const N##__##M##Type::T6 a6( aloe__6( t ));
+#define aloe__extract5( I, N, M, t, a1, a2, a3, a4, a5 ) \
+        aloe__extract4( I, N, M, t, a1, a2, a3, a4 ); \
+        const I::N##__##M##Type::T5 a5( aloe__5( t ));
 
-#define aloe__extract7( N, M, t, a1, a2, a3, a4, a5, a6, a7 ) \
-        aloe__extract6( N, M, t, a1, a2, a3, a4, a5, a6 ); \
-        const N##__##M##Type::T7 a7( aloe__7( t ));
+#define aloe__extract6( I, N, M, t, a1, a2, a3, a4, a5, a6 ) \
+        aloe__extract5( I, N, M, t, a1, a2, a3, a4, a5 ); \
+        const I::N##__##M##Type::T6 a6( aloe__6( t ));
 
-#define aloe__extract8( N, M, t, a1, a2, a3, a4, a5, a6, a7, a8 ) \
-        aloe__extract7( N, M, t, a1, a2, a3, a4, a5, a6, a7 ); \
-        const N##__##M##Type::T8 a8( aloe__8( t ));
+#define aloe__extract7( I, N, M, t, a1, a2, a3, a4, a5, a6, a7 ) \
+        aloe__extract6( I, N, M, t, a1, a2, a3, a4, a5, a6 ); \
+        const I::N##__##M##Type::T7 a7( aloe__7( t ));
 
-#define aloe__extract9( N, M, t, a1, a2, a3, a4, a5, a6, a7, a8, a9 ) \
-        aloe__extract8( N, M, t, a1, a2, a3, a4, a5, a6, a7, a8 ); \
-        const N##__##M##Type::T9 a9( aloe__9( t ));
+#define aloe__extract8( I, N, M, t, a1, a2, a3, a4, a5, a6, a7, a8 ) \
+        aloe__extract7( I, N, M, t, a1, a2, a3, a4, a5, a6, a7 ); \
+        const I::N##__##M##Type::T8 a8( aloe__8( t ));
+
+#define aloe__extract9( I, N, M, t, a1, a2, a3, a4, a5, a6, a7, a8, a9 ) \
+        aloe__extract8( I, N, M, t, a1, a2, a3, a4, a5, a6, a7, a8 ); \
+        const I::N##__##M##Type::T9 a9( aloe__9( t ));
 
 
 #define aloe__indexArg( I, N, n ) const I::N##__indexType & n
@@ -353,3 +355,4 @@ namespace Aloe {
     }; //Detail
 }; //Aloe
 #endif//ALOE_INCLUDED_ALOE_PROPERTY_H
+

@@ -1,9 +1,11 @@
+
 #ifndef ALOE_INCLUDED_ALOE_TYPES_H
 #define ALOE_INCLUDED_ALOE_TYPES_H
 
 #include "Aloe/aloePP.h"
 #include "Aloe/aloeError.h"
 
+#include <sys/types.h>
 #include <stddef.h>
 #include <time.h>
 
@@ -26,16 +28,18 @@ namespace Aloe {
         typedef __int8  Int8;
 #else
         // typy specyficzne
-        typedef unsigned int64_t ULongLong;
-        typedef unsigned int64_t UInt64;
-        typedef unsigned int32_t UInt32;
-        typedef unsigned int16_t UInt16;
-        typedef unsigned int8_t  UInt8;
+        typedef u_int64_t ULongLong;
+        typedef u_int64_t UInt64;
+        typedef u_int32_t UInt32;
+        typedef u_int16_t UInt16;
+        typedef u_int8_t  UInt8;
         
         typedef int64_t Int64;
         typedef int32_t Int32;
         typedef int16_t Int16;
         typedef int8_t  Int8;
+
+#define _snprintf snprintf
 #endif
         typedef float       Float32;
         typedef double      Float64;
@@ -96,10 +100,25 @@ namespace Aloe {
         typedef const void  *CRawPointer;
         
 
-        union None
+        struct None
         {
             template< class T > Bool operator == ( const T & ) { return false; }
             Bool operator == ( const None & ) { return true; }
+
+            operator Bool () const { return false; }
+            operator Long () const { return 0L; }
+            operator ULong () const { return 0UL; }
+            operator Int () const { return 0; }
+            operator UInt () const { return 0U; }
+            operator Int8 () const { return 0; }
+            operator UInt8 () const { return 0U; }
+            operator Int16 () const { return 0; }
+            operator UInt16 () const { return 0U; }
+            operator Int64 () const { return 0LL; }
+            operator UInt64 () const { return 0ULL; }
+            operator Float () const { return 0; }
+            operator CStr () const { return ""; }
+            operator CWideStr () const { return L""; }
         };
         
         union LongPointer
@@ -145,31 +164,55 @@ namespace Aloe {
             (*reinterpret_cast< _T2 *>( b )) = x;
             return (*reinterpret_cast< _T1 *>( b ));
         }
+
+        template< class _T > _T makePositiveCoord( _T coord, _T start, _T end )
+        {
+            if ( coord < 0 )
+                return end + coord + 1;
+            else
+                return start + coord;
+        }
+        
+        template< class _T > _T makeNegativeCoord( _T coord, _T start, _T end )
+        {
+            if ( coord < 0 )
+                return end + coord + 1;
+            else
+                return start + coord;
+        }
     };//Utils
 
     // typy wyzsze
     namespace Types {
 
-        union Color32;
+        struct Color32;
         struct Point2i;
         struct Vector2i;
         struct Recti;
 
-        union Color32
+        struct Color32
         {
-            struct
+	    UByte red;
+	    UByte green;
+	    UByte blue;
+	    UByte alpha;
+
+            ULong & longWord()
+	    {
+		return (*reinterpret_cast< ULong *>( this ));
+	    }
+	    
+            const ULong & longWord() const
+	    {
+		return (*reinterpret_cast< const ULong *>( this ));
+	    }
+
+            Color32( ULong lw )
             {
-                UByte red;
-                UByte green;
-                UByte blue;
-                UByte alpha;
-            };
-            ULong longWord;
+		longWord() = lw;
+	    }
 
-            Color32( ULong lw ) : longWord( lw )
-            {}
-
-            Color32( UByte r, UByte g, UByte b, UByte a ) : red(r), green(g), blue(b), alpha(a)
+            Color32( UByte r = 0, UByte g = 0, UByte b = 0, UByte a = 255 ) : red(r), green(g), blue(b), alpha(a)
             {}
             
             Color32( Int r, Int g, Int b, Int a ) : red(r), green(g), blue(b), alpha(a)
@@ -182,20 +225,35 @@ namespace Aloe {
                 , alpha( static_cast< UByte >( a*255.0 ))
             {}
             
-            UByte Redub() { return red; }
-            UByte Greenub() { return green; }
-            UByte Blueub() { return blue; }
-            UByte Alphaub() { return alpha; }
+            UByte Redub() const { return red; }
+            UByte Greenub() const { return green; }
+            UByte Blueub() const { return blue; }
+            UByte Alphaub()const  { return alpha; }
 
-            Int Redi()   { return static_cast< Int >( red ); }
-            Int Greeni() { return static_cast< Int >( green ); }
-            Int Bluei()  { return static_cast< Int >( blue ); }
-            Int Alphai() { return static_cast< Int >( alpha ); }
+            Int Redi()   const { return static_cast< Int >( red ); }
+            Int Greeni() const { return static_cast< Int >( green ); }
+            Int Bluei()  const { return static_cast< Int >( blue ); }
+            Int Alphai() const { return static_cast< Int >( alpha ); }
             
-            Float Redf()   { return static_cast< Float >( red )/255.0; }
-            Float Greenf() { return static_cast< Float >( green )/255.0; }
-            Float Bluef()  { return static_cast< Float >( blue )/255.0; }
-            Float Alphaf() { return static_cast< Float >( alpha )/255.0; }
+            Float Redf()   const { return static_cast< Float >( red )/255.0; }
+            Float Greenf() const { return static_cast< Float >( green )/255.0; }
+            Float Bluef()  const { return static_cast< Float >( blue )/255.0; }
+            Float Alphaf() const { return static_cast< Float >( alpha )/255.0; }
+            
+            Bool operator == ( const Color32 &c ) const
+            {
+                return (c.longWord() == longWord());
+            }
+            
+            Bool operator != ( const Color32 &c ) const
+            {
+                return !((*this) == c);
+            }
+            
+            Bool operator ! () const
+            {
+                return (0 == alpha);
+            }
         };
 
         struct Point2i
@@ -208,6 +266,16 @@ namespace Aloe {
 
             Point2i & operator += ( const Vector2i &v );
             Point2i & operator -= ( const Vector2i &v );
+
+            Bool operator == ( const Point2i &pt ) const
+            {
+                return (pt.x==x && pt.y==y);
+            }
+            
+            Bool operator != ( const Point2i &pt ) const
+            {
+                return !((*this) == pt);
+            }
         };
 
         struct Vector2i
@@ -223,6 +291,21 @@ namespace Aloe {
             Vector2i & operator *= ( Float c );
             Vector2i & operator /= ( Float c );
             Vector2i operator - () { return Vector2i( -dx, -dy ); }
+
+            Bool operator == ( const Vector2i &vt ) const
+            {
+                return (vt.dx==dx && vt.dy==dy);
+            }
+            
+            Bool operator != ( const Vector2i &vt ) const
+            {
+                return !((*this) == vt);
+            }
+
+            Bool operator ! () const
+            {
+                return (!dx && !dy);
+            }
         };
 
         struct Recti
@@ -251,6 +334,21 @@ namespace Aloe {
                 if ( y1 > y2 ) { Aloe::Utils::varSwap( y1, y2 ); }
                 return (*this);
             }
+            
+            Bool operator == ( const Recti &r ) const
+            {
+                return (r.x1==x1 && r.y1==y1 && r.x2==x2 && r.y2==y2);
+            }
+            
+            Bool operator != ( const Recti &r ) const
+            {
+                return !((*this) == r);
+            }
+
+            Bool operator ! () const
+            {
+                return (0 == width() || 0 == height());
+            }
 
             Recti & operator += ( const Vector2i v ) { x1 += v.dx; x2 += v.dx; y1 += v.dy; y2 += v.dy; return (*this); }
             Recti & operator -= ( const Vector2i v ) { x1 -= v.dx; x2 -= v.dx; y1 -= v.dy; y2 -= v.dy; return (*this); }
@@ -266,6 +364,9 @@ namespace Aloe {
                 corrner & operator = ( const Point2i &p ) { x = p.x; y = p.y; return (*this); }
                 corrner & operator += ( const Vector2i &v ) { x += v.dx; y += v.dy; return (*this); }
                 corrner & operator -= ( const Vector2i &v ) { x -= v.dx; y -= v.dy; return (*this); }
+
+                Point2i value() const { return Point2i( x, y ); }
+
             };
 
             corrner upperLeft  () { return corrner( x1, y1 ); }
@@ -280,6 +381,42 @@ namespace Aloe {
 
             Int width () const { return x2 - x1; }
             Int height() const { return y2 - y1; }
+
+            struct dimension
+            {
+                Int &x1;
+                Int &x2;
+
+                dimension( Int &rx1, Int rx2 ) : x1(rx1), x2(rx2) {}
+                
+                operator Int () { return x2 - x1; }
+                dimension & operator = ( Int d ) { x2 = x1 + d; return *this; }
+                dimension & operator += ( Int d ) { x2 += d; return *this; }
+                dimension & operator -= ( Int d ) { x2 -= d; return *this; }
+
+                Int value() const { return x2 - x1; }
+            };
+
+            dimension width() { return dimension( x1, x2 ); }
+            dimension height() { return dimension( y1, y2 ); }
+
+            Vector2i size() const { return Vector2i( width(), height() ); }
+
+            struct dimension2
+            {
+                Recti &rect;
+
+                dimension2( Recti &rr ) : rect( rr ) {}
+
+                operator Vector2i () { return Vector2i( rect.width(), rect.height() ); }
+                dimension2 & operator = ( const Vector2i &s ) { rect.x2 = rect.x1 + s.dx; rect.y2 = rect.y1 + s.dy; return *this; }
+                dimension2 & operator += ( const Vector2i &s ) { rect.x2 += s.dx; rect.y2 += s.dy; return *this; }
+                dimension2 & operator -= ( const Vector2i &s ) { rect.x2 -= s.dx; rect.y2 -= s.dy; return *this; }
+
+                Vector2i value() const { return Vector2i( rect.width(), rect.height() ); }
+            };
+
+            dimension2 size() { return dimension2( *this ); }
 
             bool empty() const
             {
@@ -312,19 +449,50 @@ namespace Aloe {
                 return true;
             }
 
+            bool isPointInside( const Point2i &pt )
+            {
+                if ( pt.x < x1 )
+                    return false;
+                
+                if ( pt.y < y1 )
+                    return false;
+
+                if ( pt.x < x2 && pt.y < y2 )
+                    return true;
+
+                return false;
+            }
+
             Recti & growToFit( const Recti &r )
             {
                 if ( r.x1 < x1 )
                     x1 = r.x1;
 
-                if ( r.x2 > x2 )
-                    x2 = r.x2;
-                
                 if ( r.y1 < y1 )
                     y1 = r.y1;
 
+                if ( r.x2 > x2 )
+                    x2 = r.x2;
+                
                 if ( r.y2 > y2 )
                     y2 = r.y2;
+
+                return (*this);
+            }
+            
+            Recti & growToFit( const Point2i &pt )
+            {
+                if ( pt.x < x1 )
+                    x1 = pt.x;
+
+                if ( pt.y < y1 )
+                    y1 = pt.y;
+                
+                if ( pt.x > x2 )
+                    x2 = pt.x;
+
+                if ( pt.y > y2 )
+                    y2 = pt.y;
 
                 return (*this);
             }
@@ -410,6 +578,7 @@ namespace Aloe {
             Point2i start;
             Point2i end;
             
+            Sectori() {}
             Sectori( Point2i s, Point2i e ) : start( s ), end( e ) {}
             Sectori( Point2i s, Vector2i v ) : start( s ), end( s + v ) {}
             Sectori( Vector2i v, Point2i e ) : start( e - v ), end( e ) {}
@@ -424,6 +593,9 @@ namespace Aloe {
                     sector.end = sector.start + v;
                     return (*this);
                 }
+            
+                operator Vector2i() const { return value(); }
+                Vector2i value() const { return (sector.end - sector.start); }
             };
 
             struct ProxyTo
@@ -436,6 +608,9 @@ namespace Aloe {
                     sector.start = sector.end - v;
                     return (*this);
                 }
+            
+                operator Vector2i() const { return value(); }
+                Vector2i value() const { return (sector.start - sector.end); }
             };
 
             ProxyFrom from() { return *this; }
@@ -444,6 +619,81 @@ namespace Aloe {
             Vector2i from() const { return (end - start); }
             Vector2i to() const { return (start - end); }
         };
+
+        struct PixelType
+        {
+            enum PixelTypes
+            {
+                F_BITS          = 0x00FF,
+                F_FLAG          = 0x0100,
+                F_SWAP          = F_FLAG,
+                F_ALPHA         = F_FLAG << 1,
+                F_LUMI          = F_FLAG << 2,
+                F_RED           = F_FLAG << 3,
+                F_GREEN         = F_FLAG << 4,
+                F_BLUE          = F_FLAG << 5,
+                F_PREMUL        = F_FLAG << 6,
+
+                LUMI_8          = 0x08 | F_LUMI,
+                ALPHA_8         = 0x08 | F_ALPHA,
+                RGB_5_5_5       = 0x0F,
+                RGBA_5_5_5_1    = 0x0F | F_ALPHA,
+                RGB_5_6_5       = 0x10,
+                RGBA_4_4_4_4    = 0x10 | F_ALPHA,
+                LUMI_ALPHA_8_8  = 0x10 | F_LUMI | F_ALPHA,
+                RGB_8_8_8       = 0x18,
+                RGB_8_8_8_8     = 0x20,
+                RGBA_8_8_8_8    = 0x20 | F_ALPHA,
+
+                RGB             = RGB_8_8_8,
+                RGB16           = RGB_5_6_5,
+                RGB24           = RGB_8_8_8,
+                RGBA            = RGBA_8_8_8_8,
+                RGBA32          = RGBA_8_8_8_8,
+                BGR             = RGB | F_SWAP,
+                BGRA            = RGBA | F_SWAP
+            };
+
+            Int          m_pixelType;
+            
+#define aloe__pixeltype3( BPP, SWAP, ALPHA ) (BPP | (SWAP << 8) | (ALPHA << 9))
+
+            Bool isSwap()  const { return 0 != (m_pixelType & F_SWAP); }
+            Bool isAlpha() const { return 0 != (m_pixelType & F_ALPHA); }
+            Bool isLumi()  const { return 0 != (m_pixelType & F_LUMI); }
+            Bool isRed()   const { return 0 != (m_pixelType & F_RED); }
+            Bool isGreen() const { return 0 != (m_pixelType & F_GREEN); }
+            Bool isBlue()  const { return 0 != (m_pixelType & F_BLUE); }
+            Bool isPreMul()const { return 0 != (m_pixelType & F_PREMUL); }
+            Int  bitsPerPixel() const { return (m_pixelType & F_BITS); }
+
+            PixelType() : m_pixelType(0)
+            {
+            }
+            
+            PixelType( Long pixelType ) : m_pixelType( pixelType )
+            {
+            }
+            
+            PixelType operator | ( PixelType y ) const
+            {
+                return PixelType( m_pixelType | y.m_pixelType );
+            }
+
+            operator Long () const
+            {
+                return m_pixelType;
+            }
+        };
+       
+        struct PixelRectangle : PixelType
+        {
+            Int          m_bytesPerRow;
+            Int          m_bytesPerPixel;
+            Recti        m_rect;
+            NCUByteArray m_pixels;
+        };
+
 
         struct Identifier
         {
@@ -477,16 +727,314 @@ namespace Aloe {
     };//Types
 
     struct IProvider;
+
+    namespace Detail {
+        struct CRefCount;
+    }
     
     struct IRefCount
     {
         virtual void AddRef() = 0;
         virtual Types::Bool RemRef() = 0;
+
+#ifndef NDEBUG
+        Detail::CRefCount *m_countImpl;
+#endif
     };
     
     namespace Utils {
+        
+        typedef void (*PfnPixelSet)( Types::NCUByteArray, const Types::Color32 & );
+       
+        // BGR (Alpha is ignored)
+        inline void pixelSet24( Types::NCUByteArray dst, const Types::Color32 &color )
+        {
+            dst[0] = color.Blueub();
+            dst[1] = color.Greenub();
+            dst[2] = color.Redub();
+        }
+        
+        // BGRA
+        inline void pixelSet32( Types::NCUByteArray dst, const Types::Color32 &color )
+        {
+            dst[0] = color.Blueub();
+            dst[1] = color.Greenub();
+            dst[2] = color.Redub();
+            dst[3] = color.Alphaub();
+        }
+        
+        // RGB (Alpha is ignored)
+        inline void pixelSet24Swapped( Types::NCUByteArray dst, const Types::Color32 &color )
+        {
+            dst[0] = color.Redub();
+            dst[1] = color.Greenub();
+            dst[2] = color.Blueub();
+        }
+        
+        // RGBA
+        inline void pixelSet32Swapped( Types::NCUByteArray dst, const Types::Color32 &color )
+        {
+            dst[0] = color.Redub();
+            dst[1] = color.Greenub();
+            dst[2] = color.Blueub();
+            dst[3] = color.Alphaub();
+        }
 
-        template< class Interface = IProvider > struct SmartPtr;
+        inline PfnPixelSet pixelSetFun( Types::Int pixelType )
+        {
+            if (( pixelType & Types::PixelType::F_BITS ) == 24 )
+            {
+                if ( pixelType & Types::PixelType::F_SWAP )
+                {
+                    return pixelSet24Swapped;
+                }
+                else {
+                    return pixelSet24;
+                }
+            }
+            else if ((pixelType & Types::PixelType::F_BITS ) == 32 )
+            {
+                if ( pixelType & Types::PixelType::F_SWAP )
+                {
+                    return pixelSet32Swapped;
+                }
+                else {
+                    return pixelSet32;
+                }
+            }
+            return NULL;
+        }
+        
+        typedef void (*PfnPixelGet)( Types::NCUByteArray, Types::Color32 & );
+        
+        // BGR (Alpha <- 255)
+        inline void pixelGet24( Types::NCUByteArray dst, Types::Color32 &color )
+        {
+            color.blue  = dst[0];
+            color.green = dst[1];
+            color.red   = dst[2];
+            color.alpha = 255;
+        }
+        
+        // BGRA
+        inline void pixelGet32( Types::NCUByteArray dst, Types::Color32 &color )
+        {
+            color.blue  = dst[0];
+            color.green = dst[1];
+            color.red   = dst[2];
+            color.alpha = dst[3];
+        }
+        
+        // RGB (Alpha <- 255)
+        inline void pixelGet24Swapped( Types::NCUByteArray dst, Types::Color32 &color )
+        {
+            color.red   = dst[0];
+            color.green = dst[1];
+            color.blue  = dst[2];
+            color.alpha = 255;
+        }
+        
+        // RGBA
+        inline void pixelGet32Swapped( Types::NCUByteArray dst, Types::Color32 &color )
+        {
+            color.red   = dst[0];
+            color.green = dst[1];
+            color.blue  = dst[2];
+            color.alpha = dst[3];
+        }
+
+        inline PfnPixelGet pixelGetFun( Types::Int pixelType )
+        {
+            if (( pixelType & Types::PixelType::F_BITS ) == 24 )
+            {
+                if ( pixelType & Types::PixelType::F_SWAP  )
+                {
+                    return pixelGet24Swapped;
+                }
+                else {
+                    return pixelGet24;
+                }
+            }
+            else if ((pixelType & Types::PixelType::F_BITS ) == 32 )
+            {
+                if ( pixelType & Types::PixelType::F_SWAP )
+                {
+                    return pixelGet32Swapped;
+                }
+                else {
+                    return pixelGet32;
+                }
+            }
+            return NULL;
+        }
+        
+        // RGB -> RGB or BGR -> BGR
+        inline void copyPixel24( Types::NCUByteArray dst, Types::NCUByteArray src )
+        {
+            dst[0] = src[0];
+            dst[1] = src[1];
+            dst[2] = src[2];
+        }
+        
+        // RGBA -> RGBA or BGRA -> BGRA
+        inline void copyPixel32( Types::NCUByteArray dst, Types::NCUByteArray src )
+        {
+            dst[0] = src[0];
+            dst[1] = src[1];
+            dst[2] = src[2];
+            dst[3] = src[3];
+        }
+        
+        // RGB -> BGR or BGR -> RGB
+        inline void swapPixel24( Types::NCUByteArray dst, Types::NCUByteArray src )
+        {
+            dst[0] = src[2];
+            dst[1] = src[1];
+            dst[2] = src[0];
+        }
+        
+        // RGBA -> BGRA or BGRA -> RGBA
+        inline void swapPixel32( Types::NCUByteArray dst, Types::NCUByteArray src )
+        {
+            dst[0] = src[2];
+            dst[1] = src[1];
+            dst[2] = src[0];
+            dst[3] = src[3];
+        }
+
+        struct copyPixelGetSet
+        {
+            PfnPixelGet m_get;
+            PfnPixelSet m_set;
+	    Types::Color32 m_color;
+
+            copyPixelGetSet( PfnPixelGet rget, PfnPixelSet rset ) : m_get( rget ), m_set( rset ) {}
+        
+            void operator () ( Types::NCUByteArray dst, Types::NCUByteArray src )
+            {
+                m_get( src, m_color );
+                m_set( dst, m_color );
+            }
+        };
+
+        template< class _F > struct copyPixelPremulFun
+        {
+            _F f; copyPixelPremulFun( _F rf ) : f(rf) {}
+
+            Types::UByte PremulChannel( Types::UInt value, Types::UInt alpha )
+            {
+                value *= alpha;
+                value /= 255;
+                return value;
+            }
+            
+            void operator () ( Types::NCUByteArray dst, Types::NCUByteArray src )
+            {
+                f( dst, src );
+                dst[0] = PremulChannel( dst[0], dst[3] );
+                dst[1] = PremulChannel( dst[1], dst[3] );
+                dst[2] = PremulChannel( dst[2], dst[3] );
+            }
+        };
+
+        template< class _F > copyPixelPremulFun< _F > copyPixelPremul( _F f )
+        {
+            return copyPixelPremulFun< _F >( f );
+        }
+
+        template< class _BlendFunc >
+            inline Types::Bool copyPixelsFunc( const Types::PixelRectangle &dst, const Types::PixelRectangle &src, _BlendFunc blendFunc )
+            {
+                Types::NCUByteArray dstLine = dst.m_pixels;
+                Types::NCUByteArray srcLine = src.m_pixels;
+                Types::Int width = varMin( dst.m_rect.width(), src.m_rect.width() );
+                Types::Int height = varMin( dst.m_rect.height(), src.m_rect.height() );
+                for ( int line = 0; line < height; ++line )
+                {
+                    Types::NCUByteArray dstPixel = dstLine;
+                    Types::NCUByteArray srcPixel = srcLine;
+
+                    for ( int pixel = 0; pixel < width; ++pixel )
+                    {
+                        blendFunc( dstPixel, srcPixel );
+                        dstPixel += dst.m_bytesPerPixel;
+                        srcPixel += src.m_bytesPerPixel;
+                    }
+
+                    dstLine += dst.m_bytesPerRow;
+                    srcLine += src.m_bytesPerRow;
+                }
+                return true;
+            }
+            
+        inline Types::Bool copyPixels( const Types::PixelRectangle &dst, const Types::PixelRectangle &src )
+        {
+            if ((src.bitsPerPixel() == 24) && (dst.bitsPerPixel() == 24))
+            {
+                if ( src.isSwap() == dst.isSwap() )
+                {
+                    return copyPixelsFunc( dst, src, copyPixel24 );
+                }
+                else {
+                    return copyPixelsFunc( dst, src, swapPixel24 );
+                }
+            }
+            else if ((src.bitsPerPixel() == 32) && (dst.bitsPerPixel() == 32))
+            {
+                if ( src.isSwap() == dst.isSwap() )
+                {
+                    return copyPixelsFunc( dst, src, copyPixel32 );
+                }
+                else {
+                    return copyPixelsFunc( dst, src, swapPixel32 );
+                }
+            }
+            else if ((src.bitsPerPixel() == 24) && (dst.bitsPerPixel() == 32))
+            {
+                if ( dst.isPreMul() == src.isPreMul( ) )
+                {
+                    if ( src.isSwap() == dst.isSwap() )
+                    {
+                        return copyPixelsFunc( dst, src, copyPixel24 );
+                    }
+                    else {
+                        return copyPixelsFunc( dst, src, swapPixel24 );
+                    }
+                }
+                else
+                {
+                    if ( src.isSwap() == dst.isSwap() )
+                    {
+                        return copyPixelsFunc( dst, src, copyPixelPremul( copyPixel24 ));
+                    }
+                    else {
+                        return copyPixelsFunc( dst, src, copyPixelPremul( swapPixel24 ));
+                    }
+                }
+            }
+            else if ((src.bitsPerPixel() == 32) && (dst.bitsPerPixel() == 24))
+            {
+                if ( src.isSwap() == dst.isSwap() )
+                {
+                    return copyPixelsFunc( dst, src, copyPixel24 );
+                }
+                else {
+                    return copyPixelsFunc( dst, src, swapPixel24 );
+                }
+            }
+            
+            PfnPixelGet pfGet = pixelGetFun( src.m_pixelType );
+            PfnPixelSet pfSet = pixelSetFun( dst.m_pixelType );
+            if ( pfGet && pfSet )
+            {
+                return copyPixelsFunc( dst, src, copyPixelGetSet( pfGet, pfSet ));
+            }
+            return false;
+        }
+
+        struct StrongPointerPolicy;
+
+        template< class Interface = IProvider, class Policy = StrongPointerPolicy > struct SmartPtr;
 
 #define ALOE_PP_makeTuple__definition( N ) \
         template< ALOE_PP_TEMPLATE_R( N, NONE, COMMA, class, A, a, ) > \
@@ -541,7 +1089,109 @@ namespace Aloe {
 
     namespace Utils {
 
-        template< class Interface > struct SmartPtr
+        struct QueryPointerPolicy
+        {
+            template< class Interface >
+                static void AddRef( Interface *object, IRefCount *count )
+                {
+                    if ( count )
+                    {
+                        count->AddRef();
+                    }
+                }
+
+            template< class Interface >
+                static bool RemRef( Interface *object, IRefCount *count )
+                {
+                    if ( count )
+                    {
+                        return count->RemRef();
+                    }
+                    return false;
+                }
+        };
+        
+        struct DynamicCastPointerPolicy
+        {
+            template< class Interface >
+                static void AddRef( Interface *object, IRefCount *count )
+                {
+                    if ( count )
+                    {
+                        count->AddRef();
+                    }
+                }
+
+            template< class Interface >
+                static bool RemRef( Interface *object, IRefCount *count )
+                {
+                    if ( count )
+                    {
+                        return count->RemRef();
+                    }
+                    return false;
+                }
+        };
+        
+        struct RawPtrCastPointerPolicy
+        {
+            template< class Interface >
+                static void AddRef( Interface *object, IRefCount *count )
+                {
+                    if ( count )
+                    {
+                        count->AddRef();
+                    }
+                }
+
+            template< class Interface >
+                static bool RemRef( Interface *object, IRefCount *count )
+                {
+                    if ( count )
+                    {
+                        return count->RemRef();
+                    }
+                    return false;
+                }
+        };
+
+        struct StrongPointerPolicy
+        {
+            template< class Interface >
+                static void AddRef( Interface *object, IRefCount *count )
+                {
+                    if ( count )
+                    {
+                        count->AddRef();
+                    }
+                }
+
+            template< class Interface >
+                static bool RemRef( Interface *object, IRefCount *count )
+                {
+                    if ( count )
+                    {
+                        return count->RemRef();
+                    }
+                    return false;
+                }
+        };
+
+        struct WeakPointerPolicy
+        {
+            template< class Interface >
+                static void AddRef( Interface *object, IRefCount *count )
+                {
+                }
+
+            template< class Interface >
+                static bool RemRef( Interface *object, IRefCount *count )
+                {
+                    return false;
+                }
+        };
+
+        template< class Interface, class Policy > struct SmartPtr
         {
             Interface         *m_object;
             Aloe::IRefCount   *m_count;
@@ -562,10 +1212,60 @@ namespace Aloe {
             {
                 AddRef();
             }
+           
+            template< class Other  >
+                SmartPtr( const SmartPtr< Other, QueryPointerPolicy > &p ) : m_object(NULL), m_count(NULL)
+                {
+                    if ( p.m_object )
+                    {
+                        p.m_object->Query( Interface::IId(), (Types::RawPointer&)m_object, m_count );
+                    }
+                }
+           
+            template< class Other  >
+                SmartPtr( const SmartPtr< Other, DynamicCastPointerPolicy > &p ) : m_object(NULL), m_count(NULL)
+                {
+                    if ( p.m_object )
+                        if ( m_object = dynamic_cast< Interface* >( p.m_object ))
+                        {
+                            m_count = p.m_count; AddRef();
+                        }
+                }
+            
+            template< class Other  >
+                SmartPtr( const SmartPtr< Other, RawPtrCastPointerPolicy > &p ) : m_object(NULL), m_count(NULL)
+                {
+                    if ( p.m_object )
+                    {
+                        p.m_object->QueryRawPtr( Interface::RAWPTR_ID, (Types::RawPointer&)m_object, m_count );
+                    }
+                }
+            
+            template< class Other, class OtherPolicy >
+                SmartPtr( const SmartPtr< Other, OtherPolicy > &p ) : m_object(p.m_object), m_count(p.m_count)
+                {
+                    AddRef();
+                }
+            
 
             ~SmartPtr()
             {
                 RemRef();
+            }
+
+            const SmartPtr< Interface, QueryPointerPolicy > & AutoQ() const
+            {
+                return *reinterpret_cast< const SmartPtr< Interface, QueryPointerPolicy > *>( this );
+            }
+            
+            const SmartPtr< Interface, DynamicCastPointerPolicy > & UseDynamicCast() const
+            {
+                return *reinterpret_cast< const SmartPtr< Interface, DynamicCastPointerPolicy > *>( this );
+            }
+            
+            const SmartPtr< Interface, RawPtrCastPointerPolicy > & UseRawPtrCast() const
+            {
+                return *reinterpret_cast< const SmartPtr< Interface, RawPtrCastPointerPolicy > *>( this );
             }
 
             SmartPtr & operator = ( const SmartPtr &p )
@@ -578,28 +1278,23 @@ namespace Aloe {
 
             SmartPtr & AddRef()
             {
-                if ( m_count )
-                    m_count->AddRef();
-
+                Policy::AddRef( m_object, m_count );
                 return (*this);
             }
 
             SmartPtr & RemRef()
             {   
-                if ( m_count )
+                if ( Policy::RemRef( m_object, m_count ))
                 {
-                    if ( m_count->RemRef() )
-                    {
-                        m_object = NULL;
-                        m_count = NULL;
-                    }
+                    m_object = NULL;
+                    m_count = NULL;
                 }
 
                 return (*this);
             }
 
             template< class PropertyType >
-                typename Aloe::Detail::PropertyTraits< PropertyType >::PropertyType operator [] ( PropertyType property )
+                typename Aloe::Detail::PropertyTraits< PropertyType >::PropertyType operator [] ( PropertyType property ) const
                 {
                     return Detail::make_property( (*this), property );
                 }
@@ -696,13 +1391,18 @@ namespace Aloe {
 
     namespace Utils {
 
-        template< class _Tx > struct ArrayOf
+        template< class _Tx = Types::UByte > struct ArrayOf
         {
             Types::SizeType      m_size;
             _Tx                 *m_objects;
             Aloe::IRefCount     *m_count;
 
+            typedef _Tx * Iterator;
+
             ArrayOf() : m_size(0), m_objects(0), m_count(0)
+            {}
+
+            ArrayOf( const Types::None & ) : m_size(0), m_objects(0), m_count(0)
             {}
 
             ArrayOf( Types::SizeType s, _Tx *p, Aloe::IRefCount *d ) : m_size(s), m_objects(p), m_count(d)
@@ -833,12 +1533,27 @@ namespace Aloe {
                 return m_objects[ index ];
             }
 
-            _Tx * begin() const
+            ArrayOf first_n( Types::SizeType n ) const
+            {
+                ArrayOf a( *this );
+                a.m_size = varMin( n, a.m_size );
+                return a;
+            }
+            
+            ArrayOf subarr( Types::SizeType first, Types::SizeType count ) const
+            {
+                ArrayOf a( *this );
+                a.m_objects = m_objects + first;
+                a.m_size = count;
+                return a;
+            }
+
+            Iterator begin() const
             {
                 return m_objects;
             }
 
-            _Tx * end() const
+            Iterator end() const
             {
                 return (m_objects + m_size);
             }
@@ -862,15 +1577,30 @@ namespace Aloe {
             {
                 return empty();
             }
+
+	    Types::Tuple< _Tx *, Types::SizeType > tuple ()
+            {
+                return Types::Tuple< _Tx *, Types::SizeType >( m_objects, m_size );
+            }
+            
+            Types::Tuple< const _Tx *, Types::SizeType > tuple () const
+            {
+                return Types::Tuple< const _Tx *, Types::SizeType >( m_objects, m_size );
+            }
         };
 
-        template< class _Tx > struct ArrayOf< SmartPtr< _Tx > >
+        template< class _Tx, class _PolicyX > struct ArrayOf< SmartPtr< _Tx, _PolicyX > >
         {
-            Types::SizeType      m_size;
-            SmartPtr< _Tx >     *m_objects;
-            Aloe::IRefCount     *m_count;
+            Types::SizeType m_size;
+            SmartPtr< _Tx, _PolicyX > *m_objects;
+            Aloe::IRefCount *m_count;
+            
+            typedef SmartPtr< _Tx, _PolicyX > * Iterator;
 
             ArrayOf() : m_size(0), m_objects(0), m_count(0)
+            {}
+
+            ArrayOf( const Types::None & ) : m_size(0), m_objects(0), m_count(0)
             {}
 
             ArrayOf( Types::SizeType s, _Tx *p, Aloe::IRefCount *d ) : m_size(s), m_objects(p), m_count(d)
@@ -881,25 +1611,40 @@ namespace Aloe {
                 AddRef();
             }
 
-            template< class _Ty >
-                explicit ArrayOf( const ArrayOf< SmartPtr< _Ty > > &other ) : m_size( other.m_size )
+            template< class _Ty, class _PolicyY >
+                ArrayOf( const ArrayOf< SmartPtr< _Ty, _PolicyY > > &other ) : m_size( other.m_size )
                 {
-                    m_objects = new SmartPtr< _Tx >[ m_size ];
-                    m_count = new Aloe::Detail::CArrayDeletter< SmartPtr< _Tx > >( m_objects );
-                    SmartPtr< _Ty > *p = other.begin();
-                    SmartPtr< _Tx > *q = begin();
+                    m_objects = new SmartPtr< _Tx, _PolicyX >[ m_size ];
+                    m_count = new Aloe::Detail::CArrayDeletter< SmartPtr< _Tx, _PolicyX > >( m_objects );
+                    SmartPtr< _Ty, _PolicyY > *p = other.begin();
+                    SmartPtr< _Tx, _PolicyX > *q = begin();
                     for (; p != other.end(); ++p, ++q )
                     {
-                        q->QueryFrom( *p );
+                        *q = *p;
                     }
                 }
+            
+            const ArrayOf< SmartPtr< _Tx, QueryPointerPolicy > > & AutoQ() const
+            {
+                return *reinterpret_cast< const ArrayOf< SmartPtr< _Tx, QueryPointerPolicy > > *>( this );
+            }
+            
+            const ArrayOf< SmartPtr< _Tx, DynamicCastPointerPolicy > > & UseDynamicCast() const
+            {
+                return *reinterpret_cast< const ArrayOf< SmartPtr< _Tx, DynamicCastPointerPolicy > > *>( this );
+            }
+            
+            const ArrayOf< SmartPtr< _Tx, RawPtrCastPointerPolicy > > & UseRawPtrCast() const
+            {
+                return *reinterpret_cast< const ArrayOf< SmartPtr< _Tx, RawPtrCastPointerPolicy > > *>( this );
+            }
 
             ArrayOf( Types::SizeType s ) : m_size(s)
             {
                 if ( m_size > 0 )
                 {
-                    m_objects = new SmartPtr< _Tx >[ s ];
-                    m_count = new Aloe::Detail::CArrayDeletter< SmartPtr< _Tx > >( m_objects );
+                    m_objects = new SmartPtr< _Tx, _PolicyX >[ s ];
+                    m_count = new Aloe::Detail::CArrayDeletter< SmartPtr< _Tx, _PolicyX > >( m_objects );
                 }
                 else {
                     m_objects = NULL;
@@ -911,8 +1656,8 @@ namespace Aloe {
             {
                 if ( m_size > 0 )
                 {
-                    m_objects = new SmartPtr< _Tx >[ s ];
-                    m_count = new Aloe::Detail::CArrayDeletter< SmartPtr< _Tx > >( m_objects );
+                    m_objects = new SmartPtr< _Tx, _PolicyX >[ s ];
+                    m_count = new Aloe::Detail::CArrayDeletter< SmartPtr< _Tx, _PolicyX > >( m_objects );
 
                     for ( _Tx *p = begin(); p != end(); ++p )
                     {
@@ -930,11 +1675,11 @@ namespace Aloe {
                 RemRef();
             }
 
-            ArrayOf< SmartPtr< _Tx > > & Resize( Types::SizeType s, const _Tx &value )
+            ArrayOf< SmartPtr< _Tx, _PolicyX > > & Resize( Types::SizeType s, const _Tx &value )
             {
-                ArrayOf< SmartPtr< _Tx > > other( s );
-                SmartPtr< _Tx > *p = begin();
-                SmartPtr< _Tx > *q = other.begin();
+                ArrayOf< SmartPtr< _Tx, _PolicyX > > other( s );
+                SmartPtr< _Tx, _PolicyX > *p = begin();
+                SmartPtr< _Tx, _PolicyX > *q = other.begin();
                 for ( ; p != end() && q != other.end(); ++p, ++q )
                 {
                     *q = *p;
@@ -949,10 +1694,10 @@ namespace Aloe {
                 return (*this);
             }
 
-            ArrayOf< SmartPtr< _Tx > > & Resize( Types::SizeType s )
+            ArrayOf< SmartPtr< _Tx, _PolicyX > > & Resize( Types::SizeType s )
             {
-                ArrayOf< SmartPtr< _Tx > > other( s );
-                for ( SmartPtr< _Tx > *p = begin(), *q = other.begin(); p != end() && q != other.end(); ++p, ++q )
+                ArrayOf< SmartPtr< _Tx, _PolicyX > > other( s );
+                for ( SmartPtr< _Tx, _PolicyX > *p = begin(), *q = other.begin(); p != end() && q != other.end(); ++p, ++q )
                 {
                     *q = *p;
                 }
@@ -962,15 +1707,15 @@ namespace Aloe {
                 return (*this);
             }
 
-            ArrayOf< SmartPtr< _Tx > > & Clean()
+            ArrayOf< SmartPtr< _Tx, _PolicyX > > & Clean()
             {
                 Types::Int iCount = 0;
-                for ( SmartPtr< _Tx > *p = begin(); p != end(); ++p )
+                for ( SmartPtr< _Tx, _PolicyX > *p = begin(); p != end(); ++p )
                 {
                     iCount += !!(*p);
                 }
-                ArrayOf< SmartPtr< _Tx > > other( iCount );
-                for ( SmartPtr< _Tx > *p = begin(), *q = other.begin(); p != end(); ++p )
+                ArrayOf< SmartPtr< _Tx, _PolicyX > > other( iCount );
+                for ( SmartPtr< _Tx, _PolicyX > *p = begin(), *q = other.begin(); p != end(); ++p )
                 {
                     if ( !!(*p) )
                     {
@@ -984,14 +1729,14 @@ namespace Aloe {
                 return (*this);
             }
 
-            ArrayOf< SmartPtr< _Tx > > & AddRef()
+            ArrayOf< SmartPtr< _Tx, _PolicyX > > & AddRef()
             {
                 if ( m_count )
                     m_count->AddRef();
                 return (*this);
             }
 
-            ArrayOf< SmartPtr< _Tx > > & RemRef()
+            ArrayOf< SmartPtr< _Tx, _PolicyX > > & RemRef()
             {
                 if ( m_count )
                 {
@@ -1005,16 +1750,16 @@ namespace Aloe {
                 return (*this);
             }
 
-            ArrayOf< SmartPtr< _Tx > > & operator = ( const ArrayOf< SmartPtr< _Tx > > &other )
+            ArrayOf< SmartPtr< _Tx, _PolicyX > > & operator = ( const ArrayOf< SmartPtr< _Tx, _PolicyX > > &other )
             {
-                ArrayOf< _Tx > q( other );
+                ArrayOf< SmartPtr< _Tx, _PolicyX > > q( other );
                 varSwap( m_objects, q.m_objects );
                 varSwap( m_count, q.m_count );
                 varSwap( m_size, q.m_size );
                 return (*this);
             }
 
-            SmartPtr< _Tx > & operator [] ( Types::SizeType index )
+            SmartPtr< _Tx, _PolicyX > & operator [] ( Types::SizeType index )
             {
                 if ( index >= m_size )
                     throw Errors::Error_BadArrayIndex();
@@ -1022,20 +1767,35 @@ namespace Aloe {
                 return m_objects[ index ];
             }
             
-            const SmartPtr< _Tx > & operator [] ( Types::SizeType index ) const 
+            const SmartPtr< _Tx, _PolicyX > & operator [] ( Types::SizeType index ) const 
             {
                 if ( index >= m_size )
                     throw Errors::Error_BadArrayIndex();
 
                 return m_objects[ index ];
             }
+            
+            ArrayOf first_n( Types::SizeType n ) const
+            {
+                ArrayOf a( *this );
+                a.m_size = varMin( n, a.m_size );
+                return a;
+            }
+            
+            ArrayOf subarr( Types::SizeType first, Types::SizeType count ) const
+            {
+                ArrayOf a( *this );
+                a.m_objects = m_objects + first;
+                a.m_size = count;
+                return a;
+            }
 
-            SmartPtr< _Tx > * begin() const
+            Iterator begin() const
             {
                 return m_objects;
             }
 
-            SmartPtr< _Tx > * end() const
+            Iterator end() const
             {
                 return (m_objects + m_size);
             }
@@ -1047,7 +1807,7 @@ namespace Aloe {
 
             void resize( Types::SizeType s )
             {
-                Remsize( s );
+                Resize( s );
             }
 
             bool empty() const
@@ -1059,6 +1819,16 @@ namespace Aloe {
             {
                 return empty();
             }
+
+            Types::Tuple< SmartPtr< _Tx, _PolicyX > *, Types::SizeType > tuple ()
+            {
+                return Types::Tuple< SmartPtr< _Tx, _PolicyX > *, Types::SizeType >( m_objects, m_size );
+            }
+            
+            Types::Tuple< const SmartPtr< _Tx, _PolicyX > *, Types::SizeType > tuple () const
+            {
+                return Types::Tuple< const SmartPtr< _Tx, _PolicyX > *, Types::SizeType >( m_objects, m_size );
+            }
         };
 
         template< class _Tx > struct VectorOf
@@ -1066,7 +1836,13 @@ namespace Aloe {
             ArrayOf< _Tx > m_array;
             Types::SizeType m_size;
 
+            typedef typename ArrayOf< _Tx >::Iterator Iterator;
+
             VectorOf() : m_size(0)
+            {
+            }
+            
+            VectorOf( const Types::None & ) : m_size(0)
             {
             }
 
@@ -1080,6 +1856,26 @@ namespace Aloe {
             {
                 m_array.Resize( size, x );
                 m_size = size;
+            }
+
+            VectorOf & operator = ( const ArrayOf< _Tx > &array )
+            {
+                m_array = array;
+                m_size = m_array.size();
+                return (*this);
+            }
+            
+            VectorOf & operator = ( const Types::None & )
+            {
+                clear();
+                return (*this);
+            }
+
+            VectorOf< _Tx > & clear()
+            {
+                VectorOf v;
+                varSwap( v, *this );
+                return (*this);
             }
 
             VectorOf< _Tx > & push_back( const _Tx &x )
@@ -1137,32 +1933,93 @@ namespace Aloe {
                 return (*this);
             }
 
-            _Tx & back()
+            VectorOf & resize_to_fit( Types::SizeType s )
             {
-                return m_array[ --m_size ];
+                if ( s < m_array.size() )
+                    return (*this);
+
+                Types::SizeType arraySize = m_array.size();
+                while ( arraySize < s )
+                {
+                    arraySize *= 2;
+                }
+                return resize( arraySize );
             }
 
-            _Tx * begin()
+            Types::SizeType remove_if_equal( const _Tx &x )
+            {
+                VectorOf< _Tx > v;
+                for ( Iterator iter = m_array.begin(); iter != m_array.end(); ++iter )
+                {
+                    if ( *iter != x )
+                    {
+                        v.push_back( *iter );
+                    }
+                }
+                varSwap( v, *this );
+                return (v.size() - size());
+            }
+
+            Types::SizeType append( const _Tx &x )
+            {
+                return push_back( x ).size() - 1;
+            }
+
+            Types::Bool remove( Types::SizeType index )
+            {
+                Types::SizeType i = 0;
+                VectorOf< _Tx > v;
+                for ( Iterator iter = m_array.begin(); iter != m_array.end(); ++iter, ++i )
+                {
+                    if ( i != index )
+                    {
+                        v.push_back( *iter );
+                    }
+                }
+                varSwap( v, *this );
+                return (v.size() < size());
+            }
+            
+            Types::Bool remove( Iterator where )
+            {
+                VectorOf< _Tx > v;
+                for ( Iterator iter = m_array.begin(); iter != m_array.end(); ++iter )
+                {
+                    if ( iter != where )
+                    {
+                        v.push_back( *iter );
+                    }
+                }
+                varSwap( v, *this );
+                return (v.size() < size());
+            }
+
+            _Tx & back()
+            {
+                return m_array[ m_size-1 ];
+            }
+
+            Iterator begin() const
             {
                 return m_array.begin();
             }
 
-            _Tx * end()
+            Iterator end() const
             {
                 return begin() + m_size;
             }
 
-            Types::Bool empty()
+            Types::Bool empty() const
             {
                 return (0 == m_size);
             }
 
-            Types::SizeType size()
+            Types::SizeType size() const
             {
                 return m_size;
             }
 
-            Types::SizeType capacity()
+            Types::SizeType capacity() const
             {
                 return m_array.size();
             }
@@ -1170,6 +2027,16 @@ namespace Aloe {
             ArrayOf< _Tx > & array()
             {
                 return m_array;
+            }
+
+            const ArrayOf< _Tx > & array() const
+            {
+                return m_array;
+            }
+            
+            ArrayOf< _Tx > tight_array() const
+            {
+                return m_array.first_n( m_size );
             }
             
             _Tx & operator [] ( Types::SizeType index )
@@ -1186,6 +2053,129 @@ namespace Aloe {
                     throw Errors::Error_BadArrayIndex();
 
                 return m_array[ index ];
+            }
+        };
+
+        template< class _Tx > struct AssetOf : VectorOf< _Tx >
+        {
+            VectorOf< Types::SizeType > m_free;
+            VectorOf< Types::SizeType > m_indices;
+
+            AssetOf()
+            {}
+
+            AssetOf( const Types::None & )
+            {}
+            
+            AssetOf & operator = ( const VectorOf< _Tx > &v )
+            {
+                m_free = Types::None();
+                m_indices = Types::None();
+                VectorOf< _Tx >::operator = ( v );
+                return (*this);
+            }
+            
+            AssetOf & operator = ( const ArrayOf< _Tx > &v )
+            {
+                m_free = Types::None();
+                m_indices = Types::None();
+                VectorOf< _Tx >::operator = ( v );
+                return (*this);
+            }
+            
+            AssetOf & operator = ( const Types::None &v )
+            {
+                clear();
+                return (*this);
+            }
+
+            AssetOf & clear()
+            {
+                m_free = Types::None();
+                m_indices = Types::None();
+                VectorOf< _Tx >::clear();
+                return (*this);
+            }
+            
+            Types::SizeType add( const _Tx & x )
+            {
+                if ( m_free.empty() )
+                {
+                    m_indices.push_back( append( x ));
+                    return m_indices.back();
+                }
+                else
+                {
+                    Types::SizeType n = m_free.back();
+                    m_indices.push_back( n );
+                    m_array[ n ] = x;
+                    m_free.pop_back();
+                    return n;
+                }
+            }
+
+            Types::Bool del( Types::SizeType index )
+            {
+                if ( index < m_array.size() )
+                {
+                    m_array[ index ] = Types::None();
+                    m_free.push_back( index );
+                    m_indices.remove_if_equal( index );
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            Types::SizeType size() const
+            {
+                return m_indices.size();
+            }
+
+            Types::Bool empty() const
+            {
+                return m_indices.empty();
+            }
+
+            struct Iterator
+            {
+                VectorOf< Types::SizeType >::Iterator m_iter;
+                VectorOf< _Tx > &m_vect;
+
+                Iterator( VectorOf< Types::SizeType >::Iterator iter, VectorOf< _Tx > &vect )
+                    : m_iter( iter ), m_vect( vect )
+                {}
+
+                Iterator & operator ++ () { ++m_iter; return (*this); }
+                Iterator & operator -- () { ++m_iter; return (*this); }
+                Types::Bool operator == ( const Iterator &i ) { return i.m_iter == m_iter; }
+                Types::Bool operator != ( const Iterator &i ) { return i.m_iter != m_iter; }
+                _Tx & operator * () { return m_vect[ *m_iter ]; }
+                _Tx * operator -> () { return &(m_vect[ *m_iter ]); }
+            };
+
+            Iterator begin() const
+            {
+                return Iterator( m_indices.begin(), const_cast< AssetOf< _Tx > &>( *this ));
+            }
+
+            Iterator end() const
+            {
+                return Iterator( m_indices.end(), const_cast< AssetOf< _Tx > &>( *this ));
+            }
+
+            ArrayOf< _Tx > array() const
+            {
+                ArrayOf< _Tx > a( size() );
+                ArrayOf< _Tx >::Iterator jter = a.begin();
+                
+                for ( Iterator iter = begin(); iter != end(); ++iter, ++jter )
+                {
+                    *jter = *iter;
+                }
+
+                return a;
             }
         };
 

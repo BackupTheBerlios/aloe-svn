@@ -4,22 +4,97 @@
 
 namespace Aloe {
     namespace Win32 {
+        struct CPropertyMap
+            : Detail::Implementation
+            < CPropertyMap
+            , Detail::Interfaces< IPropertyMap >
+            , Detail::Bases< Detail::CRefCount >
+            , 0x1001 >
+        {
+            CPropertyMapTpl< Types::Int > m_mapInt;
+            CPropertyMapTpl< Types::Float > m_mapFloat;
+            CPropertyMapTpl< Types::String > m_mapString;
+            CPropertyMapTpl< Utils::SmartPtr<> > m_mapObject;
+            
+            aloe__prop_map_imp_put( IPropertyMap, Int, index, value )
+            {
+                m_mapInt.PutProperty( index, value );
+            }
+
+            aloe__prop_map_imp_put( IPropertyMap, Float, index, value )
+            {
+                m_mapFloat.PutProperty( index, value );
+            }
+
+            aloe__prop_map_imp_put( IPropertyMap, String, index, value )
+            {
+                m_mapString.PutProperty( index, value );
+            }
+
+            aloe__prop_map_imp_put( IPropertyMap, Object, index, value )
+            {
+                m_mapObject.PutProperty( index, value );
+            }
+
+            aloe__prop_map_imp_get( IPropertyMap, Int, index )
+            {
+                Types::Int value;
+                if ( !m_mapInt.GetProperty( index, value ))
+                {
+                    return Types::None();
+                }
+                return value;
+            }
+
+            aloe__prop_map_imp_get( IPropertyMap, Float, index )
+            {
+                Types::Float value;
+                if ( !m_mapFloat.GetProperty( index, value ))
+                {
+                    return Types::None();
+                }
+                return value;
+            }
+            
+            aloe__prop_map_imp_get( IPropertyMap, String, index )
+            {
+                Types::String value;
+                if ( !m_mapString.GetProperty( index, value ))
+                {
+                    return Types::String();
+                }
+                return value;
+            }
+            
+            aloe__prop_map_imp_get( IPropertyMap, Object, index )
+            {
+                Utils::SmartPtr<> value;
+                if ( !m_mapObject.GetProperty( index, value ))
+                {
+                    return Types::None();
+                }
+                return value;
+            }
+
+        };//CPropertyMap
+
         struct CFactory
             : Detail::Implementation
             < CFactory
-            , Detail::Interfaces< IFactory, Win32::IWindowFactory, Win32::IMessageLoop >
-            , Detail::Bases< Detail::CRefCount > >
+            , Detail::Interfaces< IFactory, Win32::IWindowFactory, Win32::IMessageLoop, IUserInputState, IStorage >
+            , Detail::Bases< Detail::CRefCount >
+            , 0x1000 >
         {   
             HINSTANCE m_hInstance;
             DWORD m_lastError;
             typedef std::map< Types::String, Utils::SmartPtr< IFactory > > DictFactory_t;
             DictFactory_t m_dictFactory;
 
-            Utils::SmartPtr<> __init__( HINSTANCE hInstance )
+            ThisPtr __init__( HINSTANCE hInstance )
             {
                 m_lastError = 0L;
                 m_hInstance = hInstance;
-                return Utils::SmartPtr<>( this, this );
+                return Super::__init__();
             }
 
             aloe__prop_map_imp_get( IFactory, IdOfName, csName )
@@ -42,7 +117,7 @@ namespace Aloe {
 
             aloe__method_imp( IFactory, Load, argv )
             {
-                aloe__extract1( Load, args, argv, library );
+                aloe__extract1( IFactory, Load, args, argv, library );
 
                 return false;
             }
@@ -75,24 +150,203 @@ namespace Aloe {
 
             aloe__prop_map_imp_call( IFactory, Create, index, argv )
             {
-                aloe__extract1( Create, args, argv, propMap );
+                aloe__extract1( IFactory, Create, args, argv, propMap );
+                    
+                aloe__try {
 
-                DictFactory_t::iterator found = m_dictFactory.find( index );
-                if ( found != m_dictFactory.end() )
-                {
-                    return found->second[ IFactory::Create ][ index ]( argv );
-                }
-                else {
-                    return Types::None();
-                }
+                    if ( index == aloe__string("PropertyMap") )
+                    {
+                        return (new CPropertyMap)->__init__();
+                    }
+                    else if ( index == aloe__string("Pen") )
+                    {
+                        if ( !propMap )
+                        {
+                            return (new CPen)->__init__();
+                        }
+                        Types::Int color[] = {
+                            propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Color"), 1 ),
+                            propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Color"), 2 ),
+                            propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Color"), 3 )
+                        };
+
+                        LOGPEN logPen;
+                        logPen.lopnStyle = propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Style"), 0 );
+                        logPen.lopnWidth.x = propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Width"), 0 );
+                        logPen.lopnWidth.y = propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Width"), 1 );
+                        logPen.lopnColor = RGB( color[0], color[1], color[2] );
+
+                        ::HPEN hPen = ::CreatePenIndirect( &logPen );
+                        return ( new CGDIPen )->__init__( hPen, true );
+                    }
+                    else if ( index == aloe__string("Brush") )
+                    {
+                        if ( !propMap )
+                        {
+                            return (new CBrush)->__init__();
+                        }
+
+                        Types::Int color[] = {
+                            propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Color"), 1 ),
+                            propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Color"), 2 ),
+                            propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Color"), 3 )
+                        };
+
+                        LOGBRUSH logBrush;
+                        logBrush.lbStyle = propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Style"), 0 );
+                        logBrush.lbColor = RGB( color[0], color[1], color[2] );
+
+                        switch( logBrush.lbStyle )
+                        {
+                            case BS_DIBPATTERN:
+                            case BS_DIBPATTERN8X8:
+                            case BS_DIBPATTERNPT:
+                                logBrush.lbHatch = Utils::copyCast< ::LONG >(propMap[ &IPropertyMap::Object ]( aloe__string("Brush.Bitmap"), 0 )[ &IBitmap::HBitmap ].value());
+                                break;
+                            default:
+                                logBrush.lbHatch = propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Hatch"), 0 );
+                        };
+
+                        HBRUSH hBr = ::CreateBrushIndirect( &logBrush );
+                        return ( new CGDIBrush )->__init__( hBr, true );
+                    }
+                    else if ( index == aloe__string("Font") )
+                    {
+                        if ( !propMap )
+                        {
+                            return (new CFont)->__init__();
+                        }
+                    }
+                    else if ( index == aloe__string("Bitmap") )
+                    {
+                        if  ( !propMap )
+                        {
+                            return (new CBitmap)->__init__( Types::None() );
+                        }
+
+                        Types::String name;
+                        Types::Int res = 0;
+                        LPCWSTR lpszName = NULL;
+                        int cxDesired = 0;
+                        int cyDesired = 0;
+                        UINT uType = IMAGE_BITMAP;
+                        UINT fuLoad = 0;
+
+                        res = propMap[ &IPropertyMap::Int ]( aloe__string("Bitmap.Resource"), 0 );
+                        
+                        if ( !res )
+                        {
+                            name = propMap[ &IPropertyMap::String ]( aloe__string("Bitmap.Resource"), 0 );
+                            lpszName = (WCHAR*)(name.c_str());
+                        }
+                        else {
+                            lpszName = MAKEINTRESOURCE( res );
+                        }
+
+                        if ( !res && name.empty() )
+                        {
+                            name = propMap[ &IPropertyMap::String ]( aloe__string("Bitmap.Filename"), 0 );
+                            lpszName = (WCHAR*)(name.c_str());
+                            fuLoad |= LR_LOADFROMFILE;
+                            fuLoad |= LR_CREATEDIBSECTION;
+                        }
+
+                        ::HBITMAP hBmp = (::HBITMAP)::LoadImageW( m_hInstance, lpszName, uType, cxDesired, cyDesired, fuLoad );
+
+                        return (new CBitmap)->__init__( (new CGDIBitmap)->__init__( hBmp, true ) );
+                    }
+                    else if ( index == aloe__string("GraphicDevice") )
+                    {
+                        if  ( !propMap )
+                        {
+                            ::HDC hRootDc = ::GetDC( (::HWND)NULL );
+                            ::HDC hDc = ::CreateCompatibleDC( hRootDc );
+                            ::ReleaseDC( (::HWND)NULL, hRootDc );
+                            return (new CDevContext)->__init__( hDc, (::HWND)NULL, true );
+                        }
+                    }
+                    else if ( index == aloe__string("Cursor") )
+                    {
+                        if  ( !propMap )
+                        {
+                            return (new CCursorShape)->__init__( Types::None() );
+                        }
+
+                        Types::String name;
+                        Types::Int res = 0;
+                        LPCWSTR lpszName = NULL;
+                        Types::Bool bFromFile = false;
+                        ::HINSTANCE hInstance = (::HINSTANCE)NULL;
+                        ::HCURSOR hCursor = (::HCURSOR)NULL;
+
+                        res = propMap[ &IPropertyMap::Int ]( aloe__string("Cursor.SystemResource"), 0 );
+
+                        if ( !res )
+                        {
+                            res = propMap[ &IPropertyMap::Int ]( aloe__string("Cursor.Resource"), 0 );
+                            
+                            if ( !res )
+                            {
+                                name = propMap[ &IPropertyMap::String ]( aloe__string("Cursor.Resource"), 0 );
+                                if ( !name.empty() )
+                                {
+                                    lpszName = (WCHAR*)(name.c_str());
+                                }
+                            }
+                            else {
+                                lpszName = MAKEINTRESOURCE( res );
+                            }
+                            
+                            if ( lpszName )
+                            {
+                                hInstance = m_hInstance;
+                            }
+                        }
+                        else {
+                            lpszName = Utils::copyCast< LPCWSTR >( res );
+                        }
+
+                        if ( lpszName )
+                        {
+                            hCursor = ::LoadCursor( hInstance, lpszName );
+                        }
+                        else
+                        {
+                            name = propMap[ &IPropertyMap::String ]( aloe__string("Cursor.Filename"), 0 );
+                            lpszName = (WCHAR*)(name.c_str());
+                            bFromFile = true;
+                       
+                            hCursor = ::LoadCursorFromFile( lpszName );
+                        }
+                            
+                        return (new CCursorShape)->__init__( (new CGDICursor)->__init__( hCursor, true ) );
+                        
+                    }
+                    else if ( index == aloe__string("Region") )
+                    {
+                        return (new CRegion)->__init__( Types::None() );
+                    }
+
+                    DictFactory_t::iterator found = m_dictFactory.find( index );
+                    if ( found != m_dictFactory.end() )
+                    {
+                        return found->second[ &IFactory::Create ][ index ]( argv );
+                    }
+                    else {
+                        return Types::None();
+                    }
+                
+                } aloe__finish;
+                        
+                return Types::None();
             };
             
             aloe__method_imp( Win32::IWindowFactory, CreateWindow, argv )
             {
-                aloe__extract8( CreateWindow, args, argv, className, classStyle,
+                aloe__extract8( Win32::IWindowFactory, CreateWindow, args, argv, className, classStyle,
                         windowName, windowStyle, windowStyleEx, windowRect, windowParent, windowMenu );
 
-                ::HWND hWnd = NULL;
+                ::HWND hWnd = (::HWND)NULL;
                 
                 ::WNDCLASSEX wcex;
                 ::ZeroMemory( &wcex, sizeof( WNDCLASSEX ));
@@ -103,25 +357,25 @@ namespace Aloe {
                 wcex.cbClsExtra     = 0;
                 wcex.cbWndExtra     = 0;
                 wcex.hInstance      = m_hInstance;
-                wcex.hCursor        = ::LoadCursor(NULL, IDC_ARROW);
+                wcex.hCursor        = ::LoadCursor((::HANDLE)NULL, IDC_ARROW);
                 wcex.hbrBackground  = (HBRUSH)(COLOR_BACKGROUND+1);
                 wcex.lpszMenuName   = 0;
-                wcex.lpszClassName  = className.c_str();
+                wcex.lpszClassName  = (WCHAR*)(className.c_str());
         
                 if ( !RegisterClassEx( &wcex ))
                 {
                     m_lastError = GetLastError();
-                    return Utils::SmartPtr<>();
+		    return Types::None();
                 }
 
-                hWnd = ::CreateWindowEx( windowStyleEx, className.c_str(), windowName.c_str(), windowStyle,
+                hWnd = ::CreateWindowEx( windowStyleEx, (WCHAR*)(className.c_str()), (WCHAR*)(windowName.c_str()), windowStyle,
                         windowRect.upperLeft().x, windowRect.upperLeft().y, windowRect.width(), windowRect.height(),
                         windowParent, windowMenu, m_hInstance, NULL );
 
                 if ( !hWnd )
                 {
                     m_lastError = GetLastError();
-                    return Utils::SmartPtr<>();
+		    return Types::None();
                 }
 
                 ::ShowWindow( hWnd, SW_SHOW );
@@ -152,8 +406,305 @@ namespace Aloe {
                 
                 return 0L;
             }
+
+
+            // IUserInputState
+
+            aloe__property_imp_put( IUserInputState, CursorPos, pos )
+            {
+                ::SetCursorPos( pos.x, pos.y );
+            }
+
+            aloe__property_imp_get( IUserInputState, CursorPos )
+            {
+                Types::Point2i pos;
+                ::GetCursorPos( (LPPOINT)&pos );
+                return pos;
+            }
+            
+            aloe__property_imp_put( IUserInputState, CursorShape, shape )
+            {
+                ::SetCursor( shape[ &Win32::ICursor::HCursor ] );
+            }
+            
+            aloe__property_imp_get( IUserInputState, CursorShape )
+            {
+                ::HCURSOR hCursor = ::GetCursor();
+                Utils::SmartPtr< Win32::ICursor > out;
+                if ( !CGDIObject::FindObject( out, (::HGDIOBJ)hCursor ))
+                {
+                    out = ( new CGDICursor )->__init__( hCursor );
+                }
+                return ( new CCursorShape )->__init__( out.UseRawPtrCast() );
+            }
+
+            aloe__property_imp_put( IUserInputState, MouseCapture, capture )
+            {
+                ::SetCapture( capture[ &Win32::IWindow::HWnd ] );
+            }
+            
+            aloe__property_imp_get( IUserInputState, MouseCapture )
+            {
+                if ( CWindow *window = CWindow::GetObject( ::GetCapture() ))
+                {
+                    return window->__self__();
+                }
+
+                return Types::None();
+            }
+
+            aloe__prop_map_imp_put( IUserInputState, KeyState, index, value )
+            {
+                // cannot set keyboard state
+            }
+
+            aloe__prop_map_imp_get( IUserInputState, KeyState, index )
+            {
+                DWORD dwState = ::GetKeyState( index );
+                if ( dwState & 0x8000 )
+                {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            
+            aloe__property_imp_put( IUserInputState, KeyboardState, array )
+            {
+                if ( array.size() < 256 )
+                {
+                    Types::SizeType nSize = array.size();
+                    Utils::ArrayOf< Types::UByte > current( 256 );
+                    ::GetKeyboardState( current.begin() );
+                    std::copy( array.begin(), array.begin() + nSize, current.begin() );
+                    ::SetKeyboardState( array.begin() );
+                }
+                else
+                {
+                    ::SetKeyboardState( array.begin() );
+                }
+            }
+            
+            aloe__property_imp_get( IUserInputState, KeyboardState)
+            {
+                Utils::ArrayOf< Types::UByte > array( 256 );
+                ::GetKeyboardState( array.begin() );
+                return array;
+            }
+
+            aloe__property_imp_put( IUserInputState, KeyboardCapture, capture )
+            {
+                ::SetFocus( capture[ &Win32::IWindow::HWnd ] );
+            }
+            
+            aloe__property_imp_get( IUserInputState, KeyboardCapture )
+            {
+                if ( CWindow *window = CWindow::GetObject( ::GetFocus() ))
+                {
+                    return window->__self__();
+                }
+
+                return Types::None();
+            }
+
+            //
+            //
+            // IStorage
+            //
+            //
+
+            Types::Bool isDirSeparator( Types::WideChar wc )
+            {
+                return (wc == L'\\' || wc == L'/' );
+            }
+
+            Types::NCWideStr FormatPath( Types::NCWideStr buffer, Types::CWideStr path )
+            {
+                _FormatPath( buffer, path );
+                
+                for ( int i=0; i < MAX_PATH && buffer[i]; ++i )
+                {
+                    if ( isDirSeparator( buffer[i] ))
+                    {
+                        buffer[i] = L'\\';
+                    }
+                }
+
+                return buffer;
+            }
+            
+            Types::NCWideStr _FormatPath( Types::NCWideStr buffer, Types::CWideStr path )
+            {
+                // find colon to determine if it's absolute or relative path
+                for ( int i=0; path[i]; ++i )
+                {
+                    if ( L':' == path[i] )
+                    {
+                        wcscat( buffer, path );
+                        return buffer;
+                    }
+                }
+
+                int iLevel = 0;
+
+                for ( ;; )
+                {
+                    if ( *path == L'.' )
+                    {
+                        ++path;
+                        if ( *path == L'.' )
+                        {
+                            ++iLevel;
+                            ++path;
+                            if ( isDirSeparator( *path ))
+                            {
+                                ++path;
+                                continue;
+                            }
+                            buffer[0] = 0; //< error - after '../' was expected
+                            return buffer;
+                        }
+                        if ( isDirSeparator( *path ))
+                        {
+                            ++path;
+                            continue;
+                        }
+                        buffer[0] = 0; //< error - after './' was expected
+                        return buffer;
+                    }
+                    if ( isDirSeparator( *path ))
+                    {
+                        ++path;
+                        continue;
+                    }
+                    break;
+                }
+                
+                // append current module path before 'path'
+                ::DWORD dwLen = ::GetModuleFileName( m_hInstance, (WCHAR*)buffer, MAX_PATH );
+                for ( ::DWORD dwPos = dwLen; dwPos > 0; --dwPos )
+                {
+                    if ( isDirSeparator( buffer[ dwPos ] ))
+                    {
+                        buffer[ dwPos + 1 ] = 0x0;
+                        if ( 0 == iLevel )
+                        {
+                            break;
+                        }
+                        --iLevel;
+                    }
+                }
+
+                if ( 0 != iLevel )
+                {
+                    buffer[0] = 0;
+                }
+                else
+                {
+                    wcscat( buffer, path );
+                }
+
+                return buffer;
+            }
+            
+            aloe__method_imp( IStorage, Create, argv )
+            {
+                aloe__extract2( IStorage, Create, args, argv, path, flags );
+                    
+                Types::WideChar buffer[ MAX_PATH ] = {0,};
+                ::BOOL bOk = FALSE;
+
+                if ( flags & F_STORAGE )
+                {
+                    bOk = ::CreateDirectory( (WCHAR*)FormatPath( buffer, path.c_str()), NULL );
+                }
+                else
+                {
+                    ::DWORD dwAccess = 0;
+                    ::DWORD dwShareMode = 0;
+                    ::DWORD dwCreationDisposition = 0;
+
+                    if ( flags & F_CLEAN )
+                    {
+                        dwAccess = GENERIC_WRITE;
+                        dwShareMode = FILE_SHARE_WRITE;
+                        dwCreationDisposition = CREATE_ALWAYS | TRUNCATE_EXISTING;
+                    }
+                    else if ( flags & F_APPEND )
+                    {
+                        dwAccess = GENERIC_WRITE;
+                        dwShareMode = FILE_SHARE_WRITE;
+                        dwCreationDisposition = OPEN_ALWAYS;
+                    }
+                    else
+                    {
+                        dwAccess = GENERIC_READ;
+                        dwShareMode = FILE_SHARE_READ;
+                        dwCreationDisposition = OPEN_EXISTING;
+                    }
+
+                    return (new CFile)->__init__( FormatPath( buffer, path.c_str() )
+			    , dwAccess, dwShareMode, dwCreationDisposition, 0, flags );
+                }
+
+                return Types::None();
+            }
+        
+            aloe__method_imp( IStorage, Exists, argv )
+            {
+                aloe__extract2( IStorage, Exists, args, argv, path, flags );
+                    
+                Types::WideChar buffer[ MAX_PATH ] = {0,};
+                ::WIN32_FIND_DATA findData;
+                ::HANDLE hFind = ::FindFirstFile( (WCHAR*)FormatPath( buffer, path.c_str() ), &findData );
+                if ( INVALID_HANDLE_VALUE == hFind )
+                {
+                    return false;
+                }
+                do {
+
+                    if (( findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) == ( flags & F_STORAGE ))
+                    {
+                        ::FindClose( hFind );
+                        return true;
+                    }
+
+                } while ( ::FindNextFile( hFind, &findData ));
+
+                ::FindClose( hFind );
+                return false;
+            }
+        
+             aloe__method_imp( IStorage, Remove, argv )
+             {
+                aloe__extract2( IStorage, Remove, args, argv, path, flags );
+
+                ::BOOL bOk = FALSE;
+                    
+                Types::WideChar buffer[ MAX_PATH ] = {0,};
+                
+                if ( flags & F_STORAGE )
+                {
+                    bOk = ::RemoveDirectory( (WCHAR*)FormatPath( buffer, path.c_str() ));
+                }
+                else
+                {
+                    bOk = ::DeleteFile( (WCHAR*)FormatPath( buffer, path.c_str() ));
+                }
+
+                return Types::None();
+             }
+
+            aloe__method_imp( IStorage, Enumerate, argv )
+            {
+                aloe__extract1( IStorage, Enumerate, args, argv, path );
+                
+                Types::WideChar buffer[ MAX_PATH ] = {0,};
+
+                return (new CDirectoryEnum)->__init__( __self__(), Types::String( FormatPath( buffer, path.c_str() )));
+            }
             
         };//CFactory
     };//Win32
 };//Aloe
-

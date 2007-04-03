@@ -1,6 +1,12 @@
 #ifndef ALOE_INCLUDED_ALOE_PP_H
 #define ALOE_INCLUDED_ALOE_PP_H
 
+#ifdef WIN32
+#   define ALOE_PP_SPECIALIZATION template<>
+#else
+#   define ALOE_PP_SPECIALIZATION 
+#endif
+
 #define ALOE_PP_NONE()
 #define ALOE_PP_COMMA() ,
 #define ALOE_PP_SEMICOLON() ;

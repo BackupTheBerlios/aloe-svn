@@ -1,10 +1,11 @@
+
 #ifndef ALOE_INCLUDED_ALOE_UI_H
 #define ALOE_INCLUDED_ALOE_UI_H
 
 #include "Aloe/aloe.h"
 
 namespace Aloe {
-
+        
     // topology
     struct IEntity;
     struct IContainer;
@@ -24,19 +25,18 @@ namespace Aloe {
     struct ITargetDistanceLine;
     struct ITargetLayout;
 
-    // graphic appearance
-    struct IGraphicsDesigner;
-    struct IGraphicsDesignerClient;
-    
     // drawing tools
-    struct IDrawingTools;
     struct IFont;
     struct IPen;
     struct IBrush;
+    struct ICursorShape;
+    struct IDrawing;
     
     // drawing result
     struct IGraphicsDesign;
     struct IGraphicsDesignItem;
+    struct IShapeDesign;
+    struct IShapeDesign2;
     struct ILineDesign;
     struct IPolylineDesign;
     struct IPolygonDesign;
@@ -45,12 +45,17 @@ namespace Aloe {
     struct ITextDesign;
 
     // user interface events
-    struct IUserInputState;
-    struct IUserInputEvents;
-    struct IUserInterfaceState;
-    struct IUserInterfaceEvents;
-    struct IUserInterfaceEvents2;
-    struct IUserInterfaceEvents3;
+    struct IUserInputState;       // state of keyboard and pointer position
+    struct IUserInputState2;      // state of joystick/gamepad
+    struct IUserInputEvents;      // keyboard events (sent by UI item with focus)
+    struct IUserInputEvents2;     // joystick/gamepad events (sent by UI item with focus)
+    struct IUserInterfaceState;   // state of an UI item
+    struct IUserInterfaceState2;  // focus state of an UI item
+    struct IUserInterfaceEvents;  // UI item events
+    struct IUserInterfaceEvents1; // UI item events
+    struct IUserInterfaceEvents2; // motion events
+    struct IUserInterfaceEvents3; // click events
+    struct IUserInterfaceEvents4; // drag'n'drop events
 
     
     /*! \brief Entity interface
@@ -85,9 +90,18 @@ namespace Aloe {
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
+
+        aloe__prop( IEntity, Container
+                , ____, ____
+                , get , put , pointer( IContainer )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
     };
 
     aloe__runtime_prop( IEntity, Name );
+    aloe__runtime_prop( IEntity, Container );
 
 
     /*! \brief Container interface
@@ -657,158 +671,7 @@ namespace Aloe {
     aloe__runtime_prop( ITargetLayout, DistanceLines );
     aloe__runtime_prop( ITargetLayout, Cells );
 
-    
-    /*! \brief GraphicsDesigner interface
-     *
-     *  This interface gives means to generate graphics design of any GUI item.
-     *
-     *  Run-Time interfaces relation:
-     *  \code
-     *      IProvider < IGraphicsDesigner
-     *                  ^^^^^^^^^^^^^^^^^
-     *  \endcode
-     *
-     */
-    aloe__interface( IGraphicsDesigner )
-    {
-        aloe__iid( IGraphicsDesigner );
-        
-        aloe__prop( IGraphicsDesigner, Clients
-                , ____, ____
-                , get , put , array_of_pointer( IGraphicsDesignerClient )
-                , append, type( Bool ), pointer( IGraphicsDesignerClient )
-                , remove, type( Bool ), pointer( IGraphicsDesignerClient )
-                , ____, ____, ____ );
 
-        aloe__method( IGraphicsDesigner, DesignLayer
-                , type( Bool )
-                , tuple3(
-                    arg( client, In, pointer( IGraphicsDesignerClient )),
-                    arg( design, In, pointer( IGraphicsDesign )),
-                    arg( layer, In, type( Int ))
-                    ));
-    };
-
-    aloe__runtime_prop( IGraphicsDesigner, Clients );
-    aloe__runtime_method( IGraphicsDesigner, DesignLayer );
-
-
-    /*! \brief GraphicsDesignerClient interface
-     *
-     *  This interface gives means to add graphics designers for several layers.
-     *
-     *  Run-Time interfaces relation:
-     *  \code
-     *      IProvider, IEntity, IFrameClient, IContainer < IGraphicsDesignerClient
-     *                                                     ^^^^^^^^^^^^^^^^^^^^^^^
-     *  \endcode
-     *
-     */
-    aloe__interface( IGraphicsDesignerClient )
-    {
-        aloe__iid( IGraphicsDesignerClient );
-        
-        aloe__prop( IGraphicsDesignerClient, Designers
-                , ____, ____
-                , get , put , array_of_pointer( IGraphicsDesigner )
-                , append, type( Bool ), pointer( IGraphicsDesigner )
-                , remove, type( Bool ), pointer( IGraphicsDesigner )
-                , ____, ____, ____ );
-        
-        aloe__prop( IGraphicsDesignerClient, LayerOrder
-                , map , type( String )
-                , get , put , type( Int )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-    };
-
-    aloe__runtime_prop( IGraphicsDesignerClient, Designers );
-    aloe__runtime_prop( IGraphicsDesignerClient, LayerOrder );
-
-
-    /*! \brief DrawingTools interface
-     *
-     *  This interface gives means to insert graphic items into graphics design.
-     *
-     *  Run-Time interfaces relation:
-     *  \code
-     *      IProvider < IDrawingTools
-     *                  ^^^^^^^^^^^^^
-     *  \endcode
-     *
-     */
-    aloe__interface( IDrawingTools )
-    {
-        aloe__iid( IDrawingTools );
-        
-        aloe__prop( IDrawingTools, Pen
-                , ____, ____
-                , get , put , pointer( IPen )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IDrawingTools, Brush
-                , ____, ____
-                , get , put , pointer( IBrush )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IDrawingTools, Font
-                , ____, ____
-                , get , put , pointer( IFont )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-
-        aloe__method( IDrawingTools, Draw
-                , pointer( IGraphicsDesignItem )
-                , tuple1(
-                    arg( item, In, pointer( IGraphicsDesignItem ))
-                    ));
-        
-        aloe__method( IDrawingTools, DrawLine
-                , pointer( ILineDesign )
-                , tuple1(
-                    arg( sector, In, type( Sectori ))
-                    ));
-        
-        aloe__method( IDrawingTools, DrawPolyline
-                , pointer( IPolylineDesign )
-                , tuple1(
-                    arg( points, In, array_of( type( Point2i )))
-                    ));
-        
-        aloe__method( IDrawingTools, DrawPolygon
-                , pointer( IPolygonDesign )
-                , tuple1(
-                    arg( points, In, array_of( type( Point2i )))
-                    ));
-        
-        aloe__method( IDrawingTools, DrawRectangle
-                , pointer( IRectangleDesign )
-                , tuple1(
-                    arg( rect, In, type( Recti ))
-                    ));
-        
-        aloe__method( IDrawingTools, DrawText
-                , pointer( ITextDesign )
-                , tuple3(
-                    arg( text, In, type( String )),
-                    arg( rect, In, type( Recti )),
-                    arg( flags, In, type( Long ))
-                    ));
-        
-        aloe__method( IDrawingTools, Blit
-                , pointer( IBlitDesign )
-                , tuple2(
-                    arg( raster, In, pointer( IRasterRect )),
-                    arg( rect, In, type( Recti ))
-                    ));
-    };
 
     /*! \brief Font interface
      *
@@ -854,6 +717,13 @@ namespace Aloe {
                 , ____, ____, ____ );
         
         aloe__prop( IFont, Encoding
+                , ____, ____
+                , get , put , type( Int )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+        
+        aloe__prop( IFont, Rotation
                 , ____, ____
                 , get , put , type( Int )
                 , ____, ____, ____
@@ -928,6 +798,130 @@ namespace Aloe {
                 , ____, ____, ____ );
     };
 
+    /*! \brief CursorShape interface
+     *
+     *  Run-Time interfaces relation:
+     *  \code
+     *      IProvider < ICursorShape
+     *                  ^^^^^^^^^^^^
+     *  \endcode
+     */
+    aloe__interface( ICursorShape )
+    {
+        aloe__iid( ICursorShape );
+        
+        aloe__prop( ICursorShape, PixelRect
+                , ____, ____
+                , get , put , pointer( IRasterRect )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( ICursorShape, HotSpot
+                , ____, ____
+                , get , put , type( Point2i )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+    };
+
+    aloe__runtime_prop( ICursorShape, PixelRect );
+    aloe__runtime_prop( ICursorShape, HotSpot );
+    
+    /*! \brief Drawing interface
+     *
+     *  This interface gives means to insert graphic items into graphics design.
+     *
+     *  Run-Time interfaces relation:
+     *  \code
+     *      IProvider < IDrawing
+     *                  ^^^^^^^^
+     *  \endcode
+     *
+     */
+    aloe__interface( IDrawing )
+    {
+        aloe__iid( IDrawing );
+        
+        enum Flags
+        {
+            F_FILL      = 0x00000001, //!< filled shape
+            F_ROTATE    = 0x00000002, //!< rotate before blit
+            F_BLEND     = 0x00000004, //!< use opacity
+            F_COLOR     = 0x00000008, //!< use color
+            F_MULTILINE = 0x00000010, //!< allow multiple lines (text)
+            F_BREAKWORD = 0x00000020, //!< wrap using break word rule
+            F_ELLIPSIS  = 0x00000040, //!< add '...' if text doesn't fit in bound
+            F_LEFT      = 0x00000100, //!< align to left
+            F_RIGHT     = 0x00000200, //!< align to right
+            F_CENTER    = 0x00000300, //!< align to center (horizontal)
+            F_JUSTIFY   = 0x00000400, //!< justify to full width (if possible)
+            F_TOP       = 0x00001000, //!< align to top
+            F_BOTTOM    = 0x00002000, //!< align to bottom
+            F_MIDDLE    = 0x00003000, //!< align to middle (vertical)
+        };
+
+        
+        aloe__method( IDrawing, DrawSector
+                , type( SizeType )
+                , tuple2(
+                    arg( sector, In, type( Sectori )),
+                    arg( pen, In, type( SizeType ))
+                    ));
+        
+        aloe__method( IDrawing, DrawPolyline
+                , type( SizeType )
+                , tuple2(
+                    arg( points, In, array_of( type( Point2i ))),
+                    arg( pen, In, type( SizeType ))
+                    ));
+        
+        aloe__method( IDrawing, DrawPolygon
+                , type( SizeType )
+                , tuple3(
+                    arg( points, In, array_of( type( Point2i ))),
+                    arg( pen, In, type( SizeType )),
+                    arg( brush, In, type( SizeType ))
+                    ));
+        
+        aloe__method( IDrawing, DrawRectangle
+                , type( SizeType )
+                , tuple3(
+                    arg( rect, In, type( Recti )),
+                    arg( pen, In, type( SizeType )),
+                    arg( brush, In, type( SizeType ))
+                    ));
+
+        aloe__method( IDrawing, DrawString
+                , type( SizeType )
+                , tuple5(
+                    arg( text, In, type( String )),
+                    arg( rect, In, type( Recti )),
+                    arg( font, In, type( SizeType )),
+                    arg( color, In, tuple2( type( Color32 ), type( Color32 ) )),
+                    arg( flags, In, type( Long ))
+                    ));
+        
+        aloe__method( IDrawing, DrawRaster
+                , type( SizeType )
+                , tuple6(
+                    arg( dstRect, In, type( Recti )),
+                    arg( raster, In, pointer( IRaster )),
+                    arg( srcRect, In, type( Recti )),
+                    arg( color, In, type( Color32 )),
+                    arg( rotation, In, type( Int )),
+                    arg( flags, In, type( Long ))
+                    ));
+
+        aloe__method( IDrawing, DrawSubDesign
+                , type( SizeType )
+                , tuple2(
+                    arg( dstRect, In, type( Recti )),
+                    arg( subDesign, In, type( SizeType ))
+                    ));
+    };
+
+
     /*! \brief GraphicsDesign interface
      *
      *  This interface gives means to manage layout of graphics.
@@ -942,21 +936,20 @@ namespace Aloe {
     aloe__interface( IGraphicsDesign )
     {
         aloe__iid( IGraphicsDesign );
+
+        aloe__method( IGraphicsDesign, CreateDesign
+                , pointer( IGraphicsDesign )
+                , tuple1(
+                    arg( bound, In, type( Recti ))
+                    ));
         
-        aloe__prop( IGraphicsDesign, Items
+        aloe__prop( IGraphicsDesign, Bound
                 , ____, ____
-                , get , put , array_of_pointer( IGraphicsDesignItem )
-                , append, type( Bool ), pointer( IGraphicsDesignItem )
-                , remove, type( Bool ), pointer( IGraphicsDesignItem )
+                , get , put , type( Recti )
+                , ____, ____, ____
+                , ____, ____, ____
                 , ____, ____, ____ );
-        
-        aloe__prop( IGraphicsDesign, SubDesigns
-                , ____, ____
-                , get , put , array_of_pointer( IGraphicsDesign )
-                , append, type( Bool ), pointer( IGraphicsDesign )
-                , remove, type( Bool ), pointer( IGraphicsDesign )
-                , ____, ____, ____ );
-        
+
         aloe__prop( IGraphicsDesign, Parent
                 , ____, ____
                 , get , put , pointer( IGraphicsDesign )
@@ -964,24 +957,68 @@ namespace Aloe {
                 , ____, ____, ____
                 , ____, ____, ____ );
         
-        aloe__prop( IGraphicsDesign, Area
+        aloe__prop( IGraphicsDesign, SubDesigns
                 , ____, ____
-                , get , put , type( Recti )
+                , get , put , array_of_pointer( IGraphicsDesign )
+                , append, type( SizeType ), pointer( IGraphicsDesign )
+                , remove, type( Bool ), type( SizeType )
+                , ____, ____, ____ );
+        
+        aloe__prop( IGraphicsDesign, Pen
+                , map , type( SizeType )
+                , get , put , pointer( IPen )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+        
+        aloe__prop( IGraphicsDesign, Pens
+                , ____, ____
+                , get , put , array_of_pointer( IPen )
+                , append, type( SizeType ), pointer( IPen )
+                , remove, type( Bool ), type( SizeType )
+                , ____, ____, ____ );
+        
+        aloe__prop( IGraphicsDesign, Brush
+                , map , type( SizeType )
+                , get , put , pointer( IBrush )
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
 
-        aloe__method( IGraphicsDesign, Render
-                , type( Bool )
-                , tuple1(
-                    arg( device, In, pointer( IProvider ))
-                    ));
+        aloe__prop( IGraphicsDesign, Brushes
+                , ____, ____
+                , get , put , array_of_pointer( IBrush )
+                , append, type( SizeType ), pointer( IBrush )
+                , remove, type( Bool ), type( SizeType )
+                , ____, ____, ____ );
         
-        aloe__method( IGraphicsDesign, Compile
-                , pointer( IGraphicsDesign )
-                , tuple1(
-                    arg( device, In, pointer( IProvider ))
-                    ));
+        aloe__prop( IGraphicsDesign, Font
+                , map , type( SizeType )
+                , get , put , pointer( IFont )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+        
+        aloe__prop( IGraphicsDesign, Fonts
+                , ____, ____
+                , get , put , array_of_pointer( IFont )
+                , append, type( SizeType ), pointer( IFont )
+                , remove, type( Bool ), type( SizeType )
+                , ____, ____, ____ );
+        
+        aloe__prop( IGraphicsDesign, Item
+                , map , type( SizeType )
+                , get , put , pointer( IGraphicsDesignItem )
+                , ____, ____, ____ 
+                , ____, ____, ____ 
+                , ____, ____, ____ );
+        
+        aloe__prop( IGraphicsDesign, Items
+                , ____, ____
+                , get , put , array_of_pointer( IGraphicsDesignItem )
+                , append, type( SizeType ), pointer( IGraphicsDesignItem )
+                , remove, type( Bool ), type( SizeType )
+                , ____, ____, ____ );
     };
 
 
@@ -1000,42 +1037,9 @@ namespace Aloe {
     {
         aloe__iid( IGraphicsDesignItem );
 
-        aloe__method( IGraphicsDesignItem, Render
-                , type( Bool )
-                , tuple1(
-                    arg( device, In, pointer( IProvider ))
-                    ));
-        
-        aloe__method( IGraphicsDesignItem, Compile
-                , pointer( IGraphicsDesignItem )
-                , tuple1(
-                    arg( device, In, pointer( IProvider ))
-                    ));
-
         aloe__prop( IGraphicsDesignItem, Design
                 , ____, ____
-                , get , put , pointer( IGraphicsDesignItem )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IGraphicsDesignItem, Pen
-                , ____, ____
-                , get , put , pointer( IPen )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IGraphicsDesignItem, Brush
-                , ____, ____
-                , get , put , pointer( IBrush )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IGraphicsDesignItem, Font
-                , ____, ____
-                , get , put , pointer( IFont )
+                , get , put , pointer( IGraphicsDesign )
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
@@ -1046,90 +1050,91 @@ namespace Aloe {
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
-        
-        aloe__prop( IGraphicsDesignItem, Rotation
-                , ____, ____
-                , get , put , type( Float )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IGraphicsDesignItem, Opacity
-                , ____, ____
-                , get , put , type( Float )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IGraphicsDesignItem, Color
-                , ____, ____
-                , get , put , type( Color32 )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        enum {
-            F_FILL      = 0x00000001, //!< filled shape
-            F_ROTATE    = 0x00000002, //!< rotate before blit
-            F_BLEND     = 0x00000004, //!< use opacity
-            F_COLOR     = 0x00000008, //!< use color
-            F_MULTILINE = 0x00000010, //!< allow multiple lines (text)
-            F_BREAKWORD = 0x00000020, //!< wrap using break word rule
-            F_ELLIPSIS  = 0x00000040, //!< add '...' if text doesn't fit in bound
-            F_LEFT      = 0x00000100, //!< align to left
-            F_RIGHT     = 0x00000200, //!< align to right
-            F_CENTER    = 0x00000300, //!< align to center (horizontal)
-            F_JUSTIFY   = 0x00000400, //!< justify to full width (if possible)
-            F_TOP       = 0x00001000, //!< align to top
-            F_BOTTOM    = 0x00002000, //!< align to bottom
-            F_MIDDLE    = 0x00003000, //!< align to middle (vertical)
-        };
+    };
+    
+    /*! \brief ShapeDesign interface
+     *
+     *  This interface gives means to access shape attributes.
+     *
+     *  Run-Time interfaces relation:
+     *  \code
+     *      IProvider < IGraphicsDesignItem < IShapeDesign
+     *                                        ^^^^^^^^^^^^
+     *  \endcode
+     *
+     */
+    aloe__interface( IShapeDesign )
+    {
+        aloe__iid( IShapeDesign );
 
-        aloe__prop( IGraphicsDesignItem, Flags
+        aloe__prop( IShapeDesign, Pen
                 , ____, ____
-                , get , put , type( Long )
+                , get , put , type( SizeType )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+    };
+    
+    /*! \brief ShapeDesign2 interface
+     *
+     *  This interface gives means to access filled shape attributes.
+     *
+     *  Run-Time interfaces relation:
+     *  \code
+     *      IProvider < IGraphicsDesignItem < IShapeDesign < IShapeDesign2
+     *                                                       ^^^^^^^^^^^^^
+     *  \endcode
+     *
+     */
+    aloe__interface( IShapeDesign2 )
+    {
+        aloe__iid( IShapeDesign2 );
+
+        aloe__prop( IShapeDesign2, Brush
+                , ____, ____
+                , get , put , type( SizeType )
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
     };
 
-    /*! \brief LineDesign interface
+    /*! \brief SectorDesign interface
      *
      *  This interface gives means to access sector attributes.
      *
      *  Run-Time interfaces relation:
      *  \code
-     *      IProvider < IGraphicsDesignItem < ILineDesign
-     *                                        ^^^^^^^^^^^
+     *      IProvider < IGraphicsDesignItem < IShapeDesign < ISectorDesign
+     *                                                       ^^^^^^^^^^^^^
      *  \endcode
      *
      */
-    aloe__interface( ILineDesign )
+    aloe__interface( ISectorDesign )
     {
-        aloe__iid( ILineDesign );
+        aloe__iid( ISectorDesign );
         
-        aloe__prop( ILineDesign, Start
+        aloe__prop( ISectorDesign, Start
                 , ____, ____
                 , get , put , type( Point2i )
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
         
-        aloe__prop( ILineDesign, End
+        aloe__prop( ISectorDesign, End
                 , ____, ____
                 , get , put , type( Point2i )
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
         
-        aloe__prop( ILineDesign, From
+        aloe__prop( ISectorDesign, From
                 , ____, ____
                 , get , put , type( Vector2i )
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
         
-        aloe__prop( ILineDesign, To
+        aloe__prop( ISectorDesign, To
                 , ____, ____
                 , get , put , type( Vector2i )
                 , ____, ____, ____
@@ -1141,10 +1146,12 @@ namespace Aloe {
      *
      *  This interface gives means to access polyline attributes.
      *
+     *  \note The first entry in Vectors array is the distance from origin (0,0).
+     *
      *  Run-Time interfaces relation:
      *  \code
-     *      IProvider < IGraphicsDesignItem < IPolylineDesign
-     *                                        ^^^^^^^^^^^^^^^
+     *      IProvider < IGraphicsDesignItem < IShapeDesign < IPolylineDesign
+     *                                                       ^^^^^^^^^^^^^^^
      *  \endcode
      *
      */
@@ -1152,32 +1159,18 @@ namespace Aloe {
     {
         aloe__iid( IPolylineDesign );
         
-        aloe__prop( IPolylineDesign, Start
-                , ____, ____
-                , get , put , type( Point2i )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IPolylineDesign, End
-                , ____, ____
-                , get , put , type( Point2i )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
         aloe__prop( IPolylineDesign, Points
                 , ____, ____
                 , get , put , array_of( type( Point2i ))
-                , append, type( Bool ), type( Point2i )
-                , remove, type( Bool ), type( Point2i )
+                , append, type( SizeType ), type( Point2i )
+                , remove, type( Bool ), type( SizeType )
                 , ____, ____, ____ );
         
         aloe__prop( IPolylineDesign, Vectors
                 , ____, ____
                 , get , put , array_of( type( Vector2i ))
-                , append, type( Bool ), type( Vector2i )
-                , remove, type( Bool ), type( Vector2i )
+                , append, type( SizeType ), type( Vector2i )
+                , remove, type( Bool ), type( SizeType )
                 , ____, ____, ____ );
     };
 
@@ -1185,10 +1178,12 @@ namespace Aloe {
      *
      *  This interface gives means to access polygon attributes.
      *
+     *  \note The first entry in Vectors array is the distance from origin (0,0).
+     *
      *  Run-Time interfaces relation:
      *  \code
-     *      IProvider < IGraphicsDesignItem < IPolygonDesign
-     *                                        ^^^^^^^^^^^^^^
+     *      IProvider < IGraphicsDesignItem < IShapeDesign < IShapeDesign2 < IPolygonDesign
+     *                                                                       ^^^^^^^^^^^^^^
      *  \endcode
      *
      */
@@ -1196,33 +1191,20 @@ namespace Aloe {
     {
         aloe__iid( IPolygonDesign );
         
-        aloe__prop( IPolygonDesign, Start
-                , ____, ____
-                , get , put , type( Point2i )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IPolygonDesign, End
-                , ____, ____
-                , get , put , type( Point2i )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
         aloe__prop( IPolygonDesign, Points
                 , ____, ____
                 , get , put , array_of( type( Point2i ))
-                , append, type( Bool ), type( Point2i )
-                , remove, type( Bool ), type( Point2i )
+                , append, type( SizeType ), type( Point2i )
+                , remove, type( Bool ), type( SizeType )
                 , ____, ____, ____ );
         
         aloe__prop( IPolygonDesign, Vectors
                 , ____, ____
                 , get , put , array_of( type( Vector2i ))
-                , append, type( Bool ), type( Vector2i )
-                , remove, type( Bool ), type( Vector2i )
+                , append, type( SizeType ), type( Vector2i )
+                , remove, type( Bool ), type( SizeType )
                 , ____, ____, ____ );
+        
     };
 
 
@@ -1232,8 +1214,8 @@ namespace Aloe {
      *
      *  Run-Time interfaces relation:
      *  \code
-     *      IProvider < IGraphicsDesignItem < IRectangleDesign
-     *                                        ^^^^^^^^^^^^^^^^
+     *      IProvider < IGraphicsDesignItem < IShapeDesign < IShapeDesign2 < IRectangleDesign
+     *                                                                       ^^^^^^^^^^^^^^^^
      *  \endcode
      *
      */
@@ -1270,6 +1252,27 @@ namespace Aloe {
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
+        
+        aloe__prop( IBlitDesign, Color
+                , ____, ____
+                , get , put , type( Color32 )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+        
+        aloe__prop( IBlitDesign, Rotation
+                , ____, ____
+                , get , put , type( Int )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IBlitDesign, Flags
+                , ____, ____
+                , get , put , type( Long )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
     };
 
     /*! \brief TextDesign interface
@@ -1293,12 +1296,41 @@ namespace Aloe {
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
+        
+        aloe__prop( ITextDesign, Font
+                , ____, ____
+                , get , put , type( SizeType )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( ITextDesign, Flags
+                , ____, ____
+                , get , put , type( Long )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+    };
+
+
+    /*! \brief SubDesign interface
+     */
+    aloe__interface( ISubDesign )
+    {
+        aloe__iid( ISubDesign );
+
+        aloe__prop( ISubDesign, SubDesign
+                , ____, ____
+                , get , put , type( SizeType )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
     };
 
 
     /*! \brief UserInputState interface
      *
-     *  This interface gives means to query the state of input devices.
+     *  This interface gives means to query the state of input devices such as keyboard/mouse.
      *
      *  Run-Time interfaces relation:
      *  \code
@@ -1317,22 +1349,70 @@ namespace Aloe {
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
+
+        aloe__prop( IUserInputState, CursorShape
+                , ____, ____
+                , get , put , pointer( ICursorShape )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IUserInputState, MouseCapture
+                , ____, ____
+                , get , put , pointer( IWindow )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
         
-        aloe__prop( IUserInputState, AxisState
+        aloe__prop( IUserInputState, KeyState
+                , map , type( Int )
+                , get , put , type( UByte )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+        
+        aloe__prop( IUserInputState, KeyboardState
+                , ____, ____
+                , get , put , array_of( type( UByte ))
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+
+        aloe__prop( IUserInputState, KeyboardCapture
+                , ____, ____
+                , get , put , pointer( IWindow )
+                , ____, ____, ____
+                , ____, ____, ____
+                , ____, ____, ____ );
+    };
+
+    aloe__runtime_prop( IUserInputState, CursorPos );
+    aloe__runtime_prop( IUserInputState, CursorShape );
+    aloe__runtime_prop( IUserInputState, KeyState );
+    
+    /*! \brief UserInputState2 interface
+     *
+     *  This interface gives means to query the state of input devices such as joystick/gamepad.
+     *
+     *  Run-Time interfaces relation:
+     *  \code
+     *      IProvider < IUserInputState2
+     *                  ^^^^^^^^^^^^^^^^
+     *  \endcode
+     *
+     */
+    aloe__interface( IUserInputState2 )
+    {
+        aloe__iid( IUserInputState2 );
+
+        aloe__prop( IUserInputState2, AxisState
                 , map , type( Int )
                 , get , put , type( Float )
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
         
-        aloe__prop( IUserInputState, ButtonState
-                , map , type( Int )
-                , get , put , type( Bool )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IUserInputState, KeyState
+        aloe__prop( IUserInputState2, ButtonState
                 , map , type( Int )
                 , get , put , type( Bool )
                 , ____, ____, ____
@@ -1340,14 +1420,12 @@ namespace Aloe {
                 , ____, ____, ____ );
     };
 
-    aloe__runtime_prop( IUserInputState, CursorPos );
-    aloe__runtime_prop( IUserInputState, AxisState );
-    aloe__runtime_prop( IUserInputState, ButtonState );
-    aloe__runtime_prop( IUserInputState, KeyState );
+    aloe__runtime_prop( IUserInputState2, AxisState );
+    aloe__runtime_prop( IUserInputState2, ButtonState );
 
     /*! \brief UserInputEvents interface
      *
-     *  This interface is used to notify about input events.
+     *  This interface is used to notify about keyboard input events.
      *
      *  Run-Time interfaces relation:
      *  \code
@@ -1360,39 +1438,52 @@ namespace Aloe {
     {
         aloe__iid( IUserInputEvents );
 
-        aloe__method( IUserInputEvents, Motion
-                , ____
-                , tuple3(
-                    arg( sender, In, pointer( IProvider )),
-                    arg( pos, In, type( Point2i )),
-                    arg( vector, In, type( Vector2i ))
-                    ));
-
-        aloe__method( IUserInputEvents, Axis
-                , ____
-                , tuple3(
-                    arg( sender, In, pointer( IProvider )),
-                    arg( index, In, type( Int )),
-                    arg( pos, In, type( Float ))
-                    ));
-
-        aloe__method( IUserInputEvents, Button
-                , ____
+        aloe__method( IUserInputEvents, Key
+                , type( Bool )
                 , tuple3(
                     arg( sender, In, pointer( IProvider )),
                     arg( index, In, type( Int )),
                     arg( pressed, In, type( Bool ))
                     ));
         
-        aloe__method( IUserInputEvents, DoubleClick
-                , ____
+        aloe__method( IUserInputEvents, Focus
+                , type( Bool )
                 , tuple2(
                     arg( sender, In, pointer( IProvider )),
-                    arg( index, In, type( Int ))
+                    arg( flags, In, type( Long ))
                     ));
-        
-        aloe__method( IUserInputEvents, Key
-                , ____
+    };
+    
+    aloe__runtime_method( IUserInputEvents, Key );
+    aloe__runtime_method( IUserInputEvents, Focus );
+    
+    /*! \brief UserInputEvents2 interface
+     *
+     *  This interface is used to notify about input events from
+     *  - joystick/gamepad
+     *  - mouse in direct access mode.
+     *
+     *  Run-Time interfaces relation:
+     *  \code
+     *      IProvider < IUserInputEvents2
+     *                  ^^^^^^^^^^^^^^^^^
+     *  \endcode
+     *
+     */
+    aloe__interface( IUserInputEvents2 )
+    {
+        aloe__iid( IUserInputEvents );
+
+        aloe__method( IUserInputEvents2, Axis
+                , type( Bool )
+                , tuple3(
+                    arg( sender, In, pointer( IProvider )),
+                    arg( index, In, type( Int )),
+                    arg( pos, In, type( Float ))
+                    ));
+
+        aloe__method( IUserInputEvents2, Button
+                , type( Bool )
                 , tuple3(
                     arg( sender, In, pointer( IProvider )),
                     arg( index, In, type( Int )),
@@ -1400,11 +1491,8 @@ namespace Aloe {
                     ));
     };
     
-    aloe__runtime_method( IUserInputEvents, Motion );
-    aloe__runtime_method( IUserInputEvents, Axis );
-    aloe__runtime_method( IUserInputEvents, Button );
-    aloe__runtime_method( IUserInputEvents, DoubleClick );
-    aloe__runtime_method( IUserInputEvents, Key );
+    aloe__runtime_method( IUserInputEvents2, Axis );
+    aloe__runtime_method( IUserInputEvents2, Button );
 
     /*! \brief UserInterfaceState interface
      *
@@ -1434,8 +1522,27 @@ namespace Aloe {
                 , ____, ____, ____
                 , ____, ____, ____
                 , ____, ____, ____ );
+    };
+    
+    aloe__runtime_prop( IUserInterfaceState, Visible );
+    aloe__runtime_prop( IUserInterfaceState, Enabled );
+    
+    /*! \brief UserInterfaceState2 interface
+     *
+     *  This interface gives means to query the focus state of user interface items.
+     *
+     *  Run-Time interfaces relation:
+     *  \code
+     *      IProvider < IUserInterfaceState2
+     *                  ^^^^^^^^^^^^^^^^^^^^
+     *  \endcode
+     *
+     */
+    aloe__interface( IUserInterfaceState2 )
+    {
+        aloe__iid( IUserInterfaceState2 );
         
-        aloe__prop( IUserInterfaceState, Focussed
+        aloe__prop( IUserInterfaceState2, Focussed
                 , ____, ____
                 , get , put , type( Long )
                 , ____, ____, ____
@@ -1443,13 +1550,13 @@ namespace Aloe {
                 , ____, ____, ____ );
     };
     
-    aloe__runtime_prop( IUserInterfaceState, Visible );
-    aloe__runtime_prop( IUserInterfaceState, Enabled );
-    aloe__runtime_prop( IUserInterfaceState, Focussed );
+    aloe__runtime_prop( IUserInterfaceState2, Focussed );
 
     /*! \brief UserInterfaceEvents interface
      *
      *  This interface is used to notify about changes in user interface.
+     *
+     *  These events are related to UI item appearance.
      *
      *  Run-Time interfaces relation:
      *  \code
@@ -1462,44 +1569,75 @@ namespace Aloe {
     {
         aloe__iid( IUserInterfaceEvents );
         
+        aloe__method( IUserInterfaceEvents, Close
+                , type( Bool )
+                , tuple2(
+                    arg( sender, In, pointer( IProvider )),
+                    arg( flags, In, type( Long ))
+                    ));
+        
         aloe__method( IUserInterfaceEvents, Show
-                , ____
+                , type( Bool )
                 , tuple2(
                     arg( sender, In, pointer( IProvider )),
                     arg( flags, In, type( Long ))
                     ));
         
         aloe__method( IUserInterfaceEvents, Activate
-                , ____
-                , tuple2(
-                    arg( sender, In, pointer( IProvider )),
-                    arg( flags, In, type( Long ))
-                    ));
-        
-        aloe__method( IUserInterfaceEvents, Focus
-                , ____
+                , type( Bool )
                 , tuple2(
                     arg( sender, In, pointer( IProvider )),
                     arg( flags, In, type( Long ))
                     ));
         
         aloe__method( IUserInterfaceEvents, Move
-                , ____
+                , type( Bool )
                 , tuple3(
                     arg( sender, In, pointer( IProvider )),
                     arg( bound, In, type( Recti )),
                     arg( flags, In, type( Long ))
                     ));
+        
+        aloe__method( IUserInterfaceEvents, Paint
+                , type( Bool )
+                , tuple3(
+                    arg( sender, In, pointer( IProvider )),
+                    arg( device, In, pointer( IGraphicDevice )),
+                    arg( rect, In, type( Recti ))
+                    ));
     };
     
+    aloe__runtime_method( IUserInterfaceEvents, Close );
     aloe__runtime_method( IUserInterfaceEvents, Show );
     aloe__runtime_method( IUserInterfaceEvents, Activate );
-    aloe__runtime_method( IUserInterfaceEvents, Focus );
     aloe__runtime_method( IUserInterfaceEvents, Move );
+    aloe__runtime_method( IUserInterfaceEvents, Paint );
+    
+    aloe__interface( IUserInterfaceEvents1 )
+    {
+        aloe__iid( IUserInterfaceEvents1 );
+        
+        aloe__method( IUserInterfaceEvents1, Dirty
+                , type( Bool )
+                , tuple2(
+                    arg( sender, In, pointer( IProvider )),
+                    arg( bound, In, type( Recti ))
+                    ));
+        
+        aloe__method( IUserInterfaceEvents1, Design
+                , type( Bool )
+                , tuple2(
+                    arg( sender, In, pointer( IProvider )),
+                    arg( design, In, pointer( IGraphicsDesign ))
+                    ));
+    };
+    
+    aloe__runtime_method( IUserInterfaceEvents1, Dirty );
+    aloe__runtime_method( IUserInterfaceEvents1, Design );
 
     /*! \brief UserInterfaceEvents2 interface
      *
-     *  This interface is used to notify about mouse.
+     *  This interface is used to notify about mouse in UI items.
      *
      *  Run-Time interfaces relation:
      *  \code
@@ -1513,21 +1651,20 @@ namespace Aloe {
         aloe__iid( IUserInterfaceEvents2 );
         
         aloe__method( IUserInterfaceEvents2, Motion
-                , ____
-                , tuple3(
+                , type( Bool )
+                , tuple2(
                     arg( sender, In, pointer( IProvider )),
-                    arg( pos, In, type( Point2i )),
-                    arg( vector, In, type( Vector2i ))
+                    arg( pos, In, type( Point2i ))
                     ));
         
         aloe__method( IUserInterfaceEvents2, Hover
-                , ____
+                , type( Bool )
                 , tuple1(
                     arg( sender, In, pointer( IProvider ))
                     ));
         
         aloe__method( IUserInterfaceEvents2, Leave
-                , ____
+                , type( Bool )
                 , tuple1(
                     arg( sender, In, pointer( IProvider ))
                     ));
@@ -1541,7 +1678,7 @@ namespace Aloe {
 
     /*! \brief UserInterfaceEvents3 interface
      *
-     *  This interface is used to notify about clicks.
+     *  This interface is used to notify about clicks on UI items.
      *
      *  Run-Time interfaces relation:
      *  \code
@@ -1555,30 +1692,34 @@ namespace Aloe {
         aloe__iid( IUserInterfaceEvents3 );
         
         aloe__method( IUserInterfaceEvents3, Press
-                , ____
-                , tuple2(
+                , type( Bool )
+                , tuple3(
                     arg( sender, In, pointer( IProvider )),
+                    arg( button, In, type( Int )),
                     arg( pos, In, type( Point2i ))
                     ));
         
         aloe__method( IUserInterfaceEvents3, Release
-                , ____
-                , tuple2(
+                , type( Bool )
+                , tuple3(
                     arg( sender, In, pointer( IProvider )),
+                    arg( button, In, type( Int )),
                     arg( pos, In, type( Point2i ))
                     ));
         
         aloe__method( IUserInterfaceEvents3, Click
-                , ____
-                , tuple2(
+                , type( Bool )
+                , tuple3(
                     arg( sender, In, pointer( IProvider )),
+                    arg( button, In, type( Int )),
                     arg( pos, In, type( Point2i ))
                     ));
         
         aloe__method( IUserInterfaceEvents3, DoubleClick
-                , ____
-                , tuple2(
+                , type( Bool )
+                , tuple3(
                     arg( sender, In, pointer( IProvider )),
+                    arg( button, In, type( Int )),
                     arg( pos, In, type( Point2i ))
                     ));
     };
@@ -1591,7 +1732,7 @@ namespace Aloe {
 
     /*! \brief UserInterfaceEvents4 interface
      *
-     *  This interface is used to notify about drag'n'drop.
+     *  This interface is used to notify about drag'n'drop on UI items.
      *
      *  Run-Time interfaces relation:
      *  \code
@@ -1605,7 +1746,7 @@ namespace Aloe {
         aloe__iid( IUserInterfaceEvents4 );
         
         aloe__method( IUserInterfaceEvents4, DragStart
-                , ____
+                , type( Bool )
                 , tuple3(
                     arg( sender, In, pointer( IProvider )),
                     arg( button, In, type( Int )),
@@ -1613,7 +1754,7 @@ namespace Aloe {
                     ));
         
         aloe__method( IUserInterfaceEvents4, DragContinue
-                , ____
+                , type( Bool )
                 , tuple4(
                     arg( sender, In, pointer( IProvider )),
                     arg( button, In, type( Int )),
@@ -1622,7 +1763,7 @@ namespace Aloe {
                     ));
         
         aloe__method( IUserInterfaceEvents4, DragEnd
-                , ____
+                , type( Bool )
                 , tuple3(
                     arg( sender, In, pointer( IProvider )),
                     arg( button, In, type( Int )),

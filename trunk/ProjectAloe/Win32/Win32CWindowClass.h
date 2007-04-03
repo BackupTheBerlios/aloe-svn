@@ -8,14 +8,15 @@ namespace Aloe {
             : Detail::Implementation
             < CWindowClass
             , Detail::Interfaces< Win32::IWindowClass >
-            , Detail::Bases< Detail::CRefCount > >
+            , Detail::Bases< Detail::CRefCount >
+            , 0x1003 >
         {
             ::HWND m_hWnd;
             
-            Utils::SmartPtr< Win32::IWindowClass > __init__( ::HWND hWnd )
+            ThisPtr __init__( ::HWND hWnd )
             {
                 m_hWnd = hWnd;
-                return Utils::SmartPtr< Win32::IWindowClass >( this, this );
+		return Super::__init__();
             }
             
             //
@@ -45,3 +46,4 @@ namespace Aloe {
         };//CWindowClass
     };//Win32
 };//Aloe
+

@@ -3,19 +3,21 @@
 
 #include "Aloe/aloeTypes.h"
 
-#include <iostream>
 #include <sstream>
+#include <iostream>
 
 namespace Aloe {
     
     namespace Types {
         
         typedef WideChar CharType;
-        typedef std::basic_string< CharType > String;
+	typedef ::std::basic_string< CharType > String;
+	
 #define aloe__string( t ) Aloe::Types::String( L##t )
-        typedef std::basic_stringstream< CharType > StringStream;
-        typedef std::basic_istream< CharType > StreamIn;
-        typedef std::basic_ostream< CharType > StreamOut;
+
+	typedef ::std::basic_stringstream< CharType > StringStream;
+	typedef ::std::basic_istream< CharType > StreamIn;
+	typedef ::std::basic_ostream< CharType > StreamOut;
             
     };//Types
 
@@ -73,7 +75,7 @@ namespace Aloe {
                     q = p + l;
                     p = fmt.find(L"%", q);
                 }
-                ss << fmt.substr( q, -1 );
+                ss << fmt.substr( q, Types::String::npos );
             }
             return ss.str();
         }
@@ -110,7 +112,7 @@ namespace Aloe {
                     q = p + l;
                     p = fmt.find(L"%", q);
                 }
-                ss << fmt.substr( q, -1 );
+                ss << fmt.substr( q, Types::String::npos );
             }
             return ss.str();
         }
@@ -155,7 +157,7 @@ namespace Aloe {
                     q = p + l;
                     p = fmt.find(L"%", q);
                 }
-                ss << fmt.substr( q, -1 );
+                ss << fmt.substr( q, Types::String::npos );
             }
             return ss.str();
         }

@@ -1,3 +1,4 @@
+
 #ifndef ALOE_INCLUDED_ALOE_ERROR_H
 #define ALOE_INCLUDED_ALOE_ERROR_H
 
@@ -27,9 +28,16 @@ namespace Aloe {
         struct BadStreamSize : Error_BadStream
         {
         };
+        
+        struct Error_InvalidOperation : Error
+        {
+        };
+
+        struct Error_Unsupported : Error
+        {
+        };
 
     };//Errors
 };//Aloe
 
 #endif//ALOE_INCLUDED_ALOE_ERROR_H
-

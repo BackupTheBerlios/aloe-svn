@@ -98,7 +98,7 @@ namespace Aloe {
 
                 struct Proxy : Aloe::Utils::SmartPtr< Interface >
                 {
-                    PropertyMap        prop;
+                    mutable PropertyMap        prop;
 
                     Proxy( PropertyMap *t, const Aloe::Utils::SmartPtr< Interface > &p )
                         : prop( *t )
@@ -108,7 +108,7 @@ namespace Aloe {
 
                     struct Proxy2 : Aloe::Utils::SmartPtr< Interface >
                     {
-                        PropertyMap prop;
+                        mutable PropertyMap prop;
                         Index       index;
                         
                         Proxy2( const Proxy &p, const Index &i )
@@ -123,12 +123,12 @@ namespace Aloe {
                             prop.s( get(), index, x );
                         }
 
-                        operator ValueType ()
+                        operator ValueType () const
                         {
                             return prop.g( get(), index );
                         }
 
-                        ValueType value()
+                        ValueType value() const
                         {
                             return prop.g( get(), index );
                         }
@@ -150,7 +150,7 @@ namespace Aloe {
                     
                         CallRet operator () ()
                         {
-                            return prop.c( get(), index, Types::None() );
+                            return prop.c( get(), index, CallArg() );
                         }
 
 #define ALOE_PP_PropertyMap__Proxy__call( N ) \
