@@ -1775,6 +1775,29 @@ namespace Aloe {
     aloe__runtime_method( IUserInterfaceEvents4, DragContinue );
     aloe__runtime_method( IUserInterfaceEvents4, DragEnd );
 
+	namespace Utils {
+
+		inline Utils::SmartPtr< IWindow > findOwnerWindow( Utils::SmartPtr<> obj )
+		{
+			while ( !!obj )
+				aloe__try {
+
+					return obj[ &IWindow::This ];
+
+				} aloe__retry {
+
+					obj = obj[ &IEntity::Container ].value();
+
+				} aloe__retry {
+
+					obj = Types::None();
+
+				} aloe__finish;
+
+			return Types::None();
+		}
+
+	};//Util
 
 };//Aloe
 

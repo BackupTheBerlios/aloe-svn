@@ -464,7 +464,50 @@ namespace Aloe {
                 else {
                     oldMode = ::SetBkMode( m_hDc, TRANSPARENT );
                 }
-                ::DrawTextExW( m_hDc, (WCHAR *)( text.c_str() ), Utils::copyCast< int >( text.size()), (LPRECT)rect, flags, &dtp );
+                ::LONG lFlags = 0L;
+                if (( flags & IDrawing::F_MULTILINE ) != IDrawing::F_MULTILINE )
+				{
+					lFlags |= DT_SINGLELINE;
+
+					if (( flags & IDrawing::F_MIDDLE ) == IDrawing::F_MIDDLE )
+					{
+						lFlags |= DT_VCENTER;
+					}
+					else if (( flags & IDrawing::F_TOP ) == IDrawing::F_TOP )
+					{
+						lFlags |= DT_TOP;
+					}
+					else if (( flags & IDrawing::F_BOTTOM ) == IDrawing::F_BOTTOM )
+					{
+						lFlags |= DT_BOTTOM;
+					}
+				}
+				if (( flags & IDrawing::F_CENTER  ) == IDrawing::F_CENTER )
+				{
+					lFlags |= DT_CENTER;
+				}
+				else if (( flags & IDrawing::F_LEFT  ) == IDrawing::F_LEFT )
+				{
+					lFlags |= DT_LEFT;
+				}
+				else if (( flags & IDrawing::F_RIGHT  ) == IDrawing::F_RIGHT )
+				{
+					lFlags |= DT_RIGHT;
+				}
+				else if (( flags & IDrawing::F_JUSTIFY ) == IDrawing::F_JUSTIFY )
+				{
+					//lFlags |= ?
+				}
+				if (( flags & IDrawing::F_ELLIPSIS ) == IDrawing::F_ELLIPSIS )
+				{
+					//lFlags |= ?
+				}
+				if (( flags & IDrawing::F_BREAKWORD ) == IDrawing::F_BREAKWORD )
+				{
+					//lFlags |= ?
+				}
+
+                ::DrawTextExW( m_hDc, (WCHAR *)( text.c_str() ), Utils::copyCast< int >( text.size()), (LPRECT)rect, lFlags, &dtp );
                 ::SelectObject( m_hDc, obj );
                 if ( CLR_INVALID != oldTC )
                 {

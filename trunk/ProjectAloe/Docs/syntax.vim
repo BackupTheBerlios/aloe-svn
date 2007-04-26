@@ -1,4 +1,4 @@
-:syn keyword cppExceptions aloe__try aloe__next aloe__finish
+:syn keyword cppExceptions aloe__try aloe__retry aloe__finish
 :syn keyword cppType aloe__method aloe__method_imp
 :syn keyword cppType aloe__prop
 :syn keyword cppType aloe__property_imp_put aloe__property_imp_get
@@ -27,7 +27,8 @@
 :syn match cppType /tuple[0-9]/
 :syn match cppStatement /aloe__extract[0-9]/
 :syn match cppStatement /aloe__runtime[a-z_]*/
-:syn match cppStatement /&[ ]*[A-Za-z0-9: ]*I[A-Z][A-Za-z0-9]*[ ]*::[ ]*[A-Z][A-Za-z0-9]*/
+:syn match cppStatement /aloe__[0-9]/
+:syn match cppStatement /&[ ]*[A-Za-z0-9_: ]*I[A-Z][_A-Za-z0-9]*[ ]*::[ ]*[A-Z_][A-Za-z0-9]*/
 :syn keyword cppStatement __self__
 :syn keyword cppStatement __init__
 :syn keyword cppStatement ThisPtr

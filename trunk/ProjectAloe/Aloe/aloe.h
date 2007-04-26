@@ -229,7 +229,7 @@ namespace Aloe {
 #define aloe__iid_of( I ) I::IId()
 #define aloe__iid_const_of( I ) I::aloe_IID
 
-#define aloe__debugOut( S ) ::OutputDebugStringA( S );
+#define aloe__debugOut( S ) Aloe::Utils::DebugOut( S );
 
 #define aloe__report( S ) { \
     char buffer[1024] = {0,}; \
@@ -253,6 +253,10 @@ namespace Aloe {
 
 
 namespace Aloe {
+	namespace Utils {
+		extern void DebugOut( Types::CStr message );
+	};
+
     namespace Detail {
 
         inline IRefCount * add_ref( IRefCount *pCount )

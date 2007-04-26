@@ -352,9 +352,9 @@ namespace Aloe {
 		}
 
 
-		aloe__method_imp( IWindowEvents, Close, argv )
+		aloe__method_imp( Aloe::IWindowEvents, Close, argv )
 		{
-			aloe__extract1( IWindowEvents, Close, args, argv, sender );
+			aloe__extract1( Aloe::IWindowEvents, Close, args, argv, sender );
 
 			return false;
 		}
@@ -366,30 +366,30 @@ namespace Aloe {
 		  return false;
 		  }*/
 
-		aloe__method_imp( IWindowEvents, Activate, argv )
+		aloe__method_imp( Aloe::IWindowEvents, Activate, argv )
 		{
-			aloe__extract2( IWindowEvents, Activate, args, argv, sender, active );
+			aloe__extract2( Aloe::IWindowEvents, Activate, args, argv, sender, active );
 
 			return false;
 		}
 
-		aloe__method_imp( IWindowEvents, Focus, argv )
+		aloe__method_imp( Aloe::IWindowEvents, Focus, argv )
 		{
-			aloe__extract2( IWindowEvents, Focus, args, argv, sender, active );
+			aloe__extract2( Aloe::IWindowEvents, Focus, args, argv, sender, active );
 
 			return false;
 		}
 
-		aloe__method_imp( IWindowEvents, LostCapture, argv )
+		aloe__method_imp( Aloe::IWindowEvents, LostCapture, argv )
 		{
-			aloe__extract2( IWindowEvents, LostCapture, args, argv, sender, capture );
+			aloe__extract2( Aloe::IWindowEvents, LostCapture, args, argv, sender, capture );
 
 			return false;
 		}
 
-		aloe__method_imp( IWindowEvents, Move, argv )
+		aloe__method_imp( Aloe::IWindowEvents, Move, argv )
 		{
-			aloe__extract3( IWindowEvents, Move, args, argv, sender, frameRect, flags );
+			aloe__extract3( Aloe::IWindowEvents, Move, args, argv, sender, frameRect, flags );
 
 			aloe__try {
 
@@ -412,16 +412,16 @@ namespace Aloe {
 			return false;
 		}
 
-		aloe__method_imp( IWindowEvents, Key, argv )
+		aloe__method_imp( Aloe::IWindowEvents, Key, argv )
 		{
-			aloe__extract3( IWindowEvents, Key, args, argv, sender, virtKey, isDown );
+			aloe__extract3( Aloe::IWindowEvents, Key, args, argv, sender, virtKey, isDown );
 
 			return false;
 		}
 
-		aloe__method_imp( IWindowEvents, Motion, argv )
+		aloe__method_imp( Aloe::IWindowEvents, Motion, argv )
 		{
-			aloe__extract2( IWindowEvents, Motion, args, argv, sender, position );
+			aloe__extract2( Aloe::IWindowEvents, Motion, args, argv, sender, position );
 
 			aloe__try {
 
@@ -470,9 +470,9 @@ namespace Aloe {
 			return true;
 		}
 
-		aloe__method_imp( IWindowEvents, Button, argv )
+		aloe__method_imp( Aloe::IWindowEvents, Button, argv )
 		{
-			aloe__extract4( IWindowEvents, Button, args, argv, sender, position, buttonNo, isDown );
+			aloe__extract4( Aloe::IWindowEvents, Button, args, argv, sender, position, buttonNo, isDown );
 			aloe__try {
 
 				if ( m_objectUnderMouse.get() )
@@ -503,18 +503,18 @@ namespace Aloe {
 			return false;
 		}
 
-		aloe__method_imp( IWindowEvents, DoubleClick, argv )
+		aloe__method_imp( Aloe::IWindowEvents, DoubleClick, argv )
 		{
-			aloe__extract3( IWindowEvents, DoubleClick, args, argv, sender, position, buttonNo );
+			aloe__extract3( Aloe::IWindowEvents, DoubleClick, args, argv, sender, position, buttonNo );
 
 			return false;
 		}
 
-		aloe__method_imp( IWindowEvents, Paint, argv )
+		aloe__method_imp( Aloe::IWindowEvents, Paint, argv )
 		{
 			aloe__try {
 
-				aloe__extract3( IWindowEvents, Paint, args, argv, sender, screen, rect );
+				aloe__extract3( Aloe::IWindowEvents, Paint, args, argv, sender, screen, rect );
 
 				Types::Recti clientRect = sender[ &IFrame::Bound ];
 

@@ -3,6 +3,15 @@
 #endif
 
 namespace Aloe {
+	
+	const Types::String ClsID_Bitmap( aloe__string("Bitmap") );
+	const Types::String ClsID_PropertyMap( aloe__string("PropertyMap") );
+
+	const Types::Tuple< Types::String, Types::Long > ProID_BitmapFilename( aloe__string("Bitmap.Filename"), 0 );
+	const Types::Tuple< Types::String, Types::Long > ProID_ButtonFont( aloe__string("Button.Font"), 0 );
+	const Types::Tuple< Types::String, Types::Long > ProID_ButtonBitmapNormal( aloe__string("Button.Bitmap.Normal"), 0 );
+	const Types::Tuple< Types::String, Types::Long > ProID_ButtonBitmapHighlight( aloe__string("Button.Bitmap.Highlight"), 0 );
+	const Types::Tuple< Types::String, Types::Long > ProID_ButtonBitmapPressed( aloe__string("Button.Bitmap.Pressed"), 0 );
 
     struct CButtonDesigner
         : Detail::Implementation
@@ -22,28 +31,32 @@ namespace Aloe {
         Utils::SmartPtr< IRaster > m_bitmap;
         Utils::SmartPtr< IFont > m_font;
         Types::String m_label;
+		Types::Color32 m_bitmapColor;
+		Types::Long m_bitmapOpacity;
+		Types::Long m_bitmapFlags;
+		Types::Tuple< Types::Color32, Types::Color32 > m_fontColor;
+		Types::Long m_fontFlags;
 
-        ThisPtr __init__( const Utils::SmartPtr< IEntity > &entity, const Types::String &label )
+
+        ThisPtr __init__( const Utils::SmartPtr< IEntity > &entity,
+        		const Types::String &label, const Utils::SmartPtr< IPropertyMap > &prop )
         {
             m_entity = entity;
             m_label = label;
 
-            m_font = Root[ &IFactory::Create ][aloe__string("Font")]().AutoQ();
-            m_font[ &IFont::Family ] = aloe__string("Arial");
-            m_font[ &IFont::Size ] = 20;
-            m_font[ &IFont::Weight ] = FW_BOLD;
-            m_font[ &IFont::Encoding ] = EASTEUROPE_CHARSET;
+			m_font				= prop[ &IPropertyMap::Object ][ ProID_ButtonFont ].value().AutoQ();
+			m_bitmapNormal		= prop[ &IPropertyMap::Object ][ ProID_ButtonBitmapNormal ].value().AutoQ();
+			m_bitmapHighlight	= prop[ &IPropertyMap::Object ][ ProID_ButtonBitmapHighlight ].value().AutoQ();
+			m_bitmapPressed		= prop[ &IPropertyMap::Object ][ ProID_ButtonBitmapPressed ].value().AutoQ();
 
-            Utils::SmartPtr< IPropertyMap > prop  = Root[ &IFactory::Create ][aloe__string("PropertyMap")]().AutoQ();
+            m_bitmapColor = Types::Color32(255,255,255);
+            m_bitmapOpacity = 255;
+            m_bitmapFlags = 0L;
 
-            prop[ &IPropertyMap::String ](aloe__string("Bitmap.Filename"),0) = aloe__string("buttonNormal.bmp");
-            m_bitmapNormal= Root[ &IFactory::Create ][aloe__string("Bitmap")]( prop ).AutoQ();
-
-            prop[ &IPropertyMap::String ](aloe__string("Bitmap.Filename"),0) = aloe__string("buttonHighlight.bmp");
-            m_bitmapHighlight= Root[ &IFactory::Create ][aloe__string("Bitmap")]( prop ).AutoQ();
-
-            prop[ &IPropertyMap::String ](aloe__string("Bitmap.Filename"),0) = aloe__string("buttonPressed.bmp");
-            m_bitmapPressed= Root[ &IFactory::Create ][aloe__string("Bitmap")]( prop ).AutoQ();
+            aloe__1( m_fontColor ) = Types::Color32(0,128,255,255);
+            aloe__2( m_fontColor ) = Types::Color32(255,255,255,0);
+			
+			m_fontFlags = IDrawing::F_CENTER | IDrawing::F_MIDDLE;
 
             m_bitmap = m_bitmapNormal;
                 
@@ -111,8 +124,8 @@ namespace Aloe {
                 
                 m_design = design[ &IGraphicsDesign::CreateDesign ]( rect );
                 Types::SizeType nFont = ( m_design[ &IGraphicsDesign::Fonts ] += m_font );
-                m_design[ &IDrawing::DrawRaster ]( rect, m_bitmap, rcSrc, Types::Color32(255,255,255), 0, 0x0 );
-                m_design[ &IDrawing::DrawString ]( m_label, rect, nFont, Types::Color32(0,0,255), DT_CENTER | DT_SINGLELINE | DT_VCENTER );
+                m_design[ &IDrawing::DrawRaster ]( rect, m_bitmap, rcSrc, m_bitmapColor, m_bitmapOpacity, m_bitmapFlags );
+                m_design[ &IDrawing::DrawString ]( m_label, rect, nFont, m_fontColor, m_fontFlags );
             }
                 
             Types::SizeType nSubDesign = design[ &IGraphicsDesign::SubDesigns ] += m_design;
@@ -203,5 +216,40 @@ namespace Aloe {
         }
     
     };//CButtonDesigner
+	
+
+	struct CButtonListener
+		: Detail::Implementation
+		< CButtonListener
+		, Detail::Interfaces<
+			IUserInterfaceEvents3 >
+		, Detail::Bases< Detail::CRefCount > >
+	{
+
+		aloe__method_imp( IUserInterfaceEvents3, Press, argv )
+		{
+			aloe__extract3( IUserInterfaceEvents3, Press, args, argv, sender, button, pos );
+			return false;
+		}
+
+		aloe__method_imp( IUserInterfaceEvents3, Release, argv )
+		{
+			aloe__extract3( IUserInterfaceEvents3, Release, args, argv, sender, button, pos );
+			return false;
+		}
+
+		aloe__method_imp( IUserInterfaceEvents3, Click, argv )
+		{
+			aloe__extract3( IUserInterfaceEvents3, Click, args, argv, sender, button, pos );
+			return false;
+		}
+
+		aloe__method_imp( IUserInterfaceEvents3, DoubleClick, argv )
+		{
+			aloe__extract3( IUserInterfaceEvents3, DoubleClick, args, argv, sender, button, pos );
+			return false;
+		}
+
+	};//CButtonListener
     
 };//Aloe

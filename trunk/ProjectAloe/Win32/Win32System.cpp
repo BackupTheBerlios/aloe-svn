@@ -21,6 +21,12 @@
 #pragma warning(disable:4250)
 
 namespace Aloe {
+	namespace Utils {
+		void DebugOut( Types::CStr message )
+		{
+			::OutputDebugStringA( message );
+		}
+	};
 
     namespace Win32 {
 

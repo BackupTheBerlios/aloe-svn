@@ -357,7 +357,7 @@ namespace Aloe {
                 wcex.cbClsExtra     = 0;
                 wcex.cbWndExtra     = 0;
                 wcex.hInstance      = m_hInstance;
-                wcex.hCursor        = ::LoadCursor((::HANDLE)NULL, IDC_ARROW);
+				wcex.hCursor        = ::LoadCursor((::HINSTANCE)NULL, IDC_ARROW);
                 wcex.hbrBackground  = (HBRUSH)(COLOR_BACKGROUND+1);
                 wcex.lpszMenuName   = 0;
                 wcex.lpszClassName  = (WCHAR*)(className.c_str());
