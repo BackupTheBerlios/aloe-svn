@@ -416,8 +416,6 @@ namespace Aloe {
     struct IEventSource;
     struct IStringsDictionary;
     struct IStringEncoding;
-    struct IPropertyMap;
-    struct IPropertyMap2;
     
     struct IProvider
     {
@@ -474,7 +472,7 @@ namespace Aloe {
                 , ____, ____, ____
                 , ____, ____, ____
                 , call, pointer( IProvider ), tuple1(
-                    arg( args, In, pointer( IPropertyMap ))
+                    arg( args, In, pointer( IProvider ))
                     ));
 
         aloe__method( IFactory, Load
@@ -622,74 +620,7 @@ namespace Aloe {
     
     };
 
-    aloe__interface( IPropertyMap )
-    {
-        aloe__iid__const( IPropertyMap, 0x8 );
-
-        aloe__prop( IPropertyMap, Int
-                , map, tuple2( type( String ), type( Int ))
-                , get, put, type( Int )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-
-        aloe__prop( IPropertyMap, Float
-                , map, tuple2( type( String ), type( Int ))
-                , get, put, type( Float )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-
-        aloe__prop( IPropertyMap, String
-                , map, tuple2( type( String ), type( Int ))
-                , get, put, type( String )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-        aloe__prop( IPropertyMap, Object
-                , map, tuple2( type( String ), type( Int ))
-                , get, put, pointer( IProvider )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-    };
     
-    aloe__interface( IPropertyMap2 )
-    {
-        aloe__iid__const( IPropertyMap2, 0x9 );
-
-        aloe__prop( IPropertyMap2, Ints
-                , map, tuple2( type( String ), type( Int ))
-                , get, put, array_of( type( Int ))
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-
-        aloe__prop( IPropertyMap2, Floats
-                , map, tuple2( type( String ), type( Int ))
-                , get, put, array_of( type( Float ))
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-
-        aloe__prop( IPropertyMap2, Strings
-                , map, tuple2( type( String ), type( Int ))
-                , get, put, array_of( type( String ))
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-
-        aloe__prop( IPropertyMap2, Objects
-                , map, tuple2( type( String ), type( Int ))
-                , get, put, array_of_pointer( IProvider )
-                , ____, ____, ____
-                , ____, ____, ____
-                , ____, ____, ____ );
-        
-    };
-
     namespace Detail {
 
         struct CRefCount : virtual IRefCount, virtual IProvider

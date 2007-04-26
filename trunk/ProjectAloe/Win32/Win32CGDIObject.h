@@ -550,39 +550,6 @@ namespace Aloe {
             
         };//CDevContext
 
-        template< class _T > struct CPropertyMapTpl
-        {
-            typedef std::map< std::pair< Types::String, Types::Int >, _T > Map_t;
-            Map_t m_map;
-            
-            void PutProperty( const Types::Tuple< Types::String, Types::Int > &index, const _T &value )
-            {
-                PutProperty( aloe__1( index ), aloe__2( index ), value );
-            }
-            
-            bool GetProperty( const Types::Tuple< Types::String, Types::Int > &index, _T &value )
-            {
-                return GetProperty( aloe__1( index ), aloe__2( index ), value );
-            }
-
-            void PutProperty( const Types::String &name, Types::Int no, const _T &value )
-            {
-                m_map[ std::make_pair( name, no ) ] = value;
-            }
-
-            bool GetProperty( const Types::String &name, Types::Int no, _T &value )
-            {
-                Map_t::iterator iter = m_map.find( std::make_pair( name, no ));
-                if ( iter != m_map.end() )
-                {
-                    value = iter->second;
-					return true;
-                }
-                else {
-                    return false;
-                }
-            }
-        };
         
         struct CBrush
             : Detail::Implementation

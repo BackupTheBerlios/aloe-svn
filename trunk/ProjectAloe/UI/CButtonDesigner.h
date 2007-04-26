@@ -7,11 +7,11 @@ namespace Aloe {
 	const Types::String ClsID_Bitmap( aloe__string("Bitmap") );
 	const Types::String ClsID_PropertyMap( aloe__string("PropertyMap") );
 
-	const Types::Tuple< Types::String, Types::Long > ProID_BitmapFilename( aloe__string("Bitmap.Filename"), 0 );
-	const Types::Tuple< Types::String, Types::Long > ProID_ButtonFont( aloe__string("Button.Font"), 0 );
-	const Types::Tuple< Types::String, Types::Long > ProID_ButtonBitmapNormal( aloe__string("Button.Bitmap.Normal"), 0 );
-	const Types::Tuple< Types::String, Types::Long > ProID_ButtonBitmapHighlight( aloe__string("Button.Bitmap.Highlight"), 0 );
-	const Types::Tuple< Types::String, Types::Long > ProID_ButtonBitmapPressed( aloe__string("Button.Bitmap.Pressed"), 0 );
+	const Types::String ProID_BitmapFilename( aloe__string("Bitmap.Filename") );
+	const Types::String ProID_ButtonFont( aloe__string("Button.Font") );
+	const Types::String ProID_ButtonBitmapNormal( aloe__string("Button.Bitmap.Normal") );
+	const Types::String ProID_ButtonBitmapHighlight( aloe__string("Button.Bitmap.Highlight") );
+	const Types::String ProID_ButtonBitmapPressed( aloe__string("Button.Bitmap.Pressed") );
 
     struct CButtonDesigner
         : Detail::Implementation
@@ -44,10 +44,10 @@ namespace Aloe {
             m_entity = entity;
             m_label = label;
 
-			m_font				= prop[ &IPropertyMap::Object ][ ProID_ButtonFont ].value().AutoQ();
-			m_bitmapNormal		= prop[ &IPropertyMap::Object ][ ProID_ButtonBitmapNormal ].value().AutoQ();
-			m_bitmapHighlight	= prop[ &IPropertyMap::Object ][ ProID_ButtonBitmapHighlight ].value().AutoQ();
-			m_bitmapPressed		= prop[ &IPropertyMap::Object ][ ProID_ButtonBitmapPressed ].value().AutoQ();
+			m_font				= prop[ &IPropertyMap::Property ][ ProID_ButtonFont ].value();
+			m_bitmapNormal		= prop[ &IPropertyMap::Property ][ ProID_ButtonBitmapNormal ].value();
+			m_bitmapHighlight	= prop[ &IPropertyMap::Property ][ ProID_ButtonBitmapHighlight ].value();
+			m_bitmapPressed		= prop[ &IPropertyMap::Property ][ ProID_ButtonBitmapPressed ].value();
 
             m_bitmapColor = Types::Color32(255,255,255);
             m_bitmapOpacity = 255;

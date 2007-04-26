@@ -2,6 +2,7 @@
 #define ALOE_INCLUDED_ALOE_SYSTEM_H
 
 #include "Aloe/aloe.h"
+#include "Aloe/aloeObjectRef.h"
 
 namespace Aloe {
 

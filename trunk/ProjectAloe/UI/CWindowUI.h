@@ -45,22 +45,22 @@ namespace Aloe {
 
 				Utils::SmartPtr< IPropertyMap > prop  = Root[ &IFactory::Create ][aloe__string("PropertyMap")]().AutoQ();
 
-				prop[ &IPropertyMap::Int ]( aloe__string("Cursor.SystemResource"),0 ) = Utils::copyCast< Types::Int >( IDC_ARROW );
+				prop[ &IPropertyMap::Property ][ aloe__string("Cursor.SystemResource")] = Utils::copyCast< Types::Int >( IDC_ARROW );
 				m_cursorArrow = Root[ &IFactory::Create ][aloe__string("Cursor")]( prop ).AutoQ();
 
-				prop[ &IPropertyMap::Int ]( aloe__string("Cursor.SystemResource"),0 ) = Utils::copyCast< Types::Int >( IDC_SIZENWSE );
+				prop[ &IPropertyMap::Property ][ aloe__string("Cursor.SystemResource")] = Utils::copyCast< Types::Int >( IDC_SIZENWSE );
 				m_cursorNWSE = Root[ &IFactory::Create ][aloe__string("Cursor")]( prop ).AutoQ();
 
-				prop[ &IPropertyMap::Int ]( aloe__string("Cursor.SystemResource"),0 ) = Utils::copyCast< Types::Int >( IDC_SIZENESW );
+				prop[ &IPropertyMap::Property ][ aloe__string("Cursor.SystemResource")] = Utils::copyCast< Types::Int >( IDC_SIZENESW );
 				m_cursorNESW = Root[ &IFactory::Create ][aloe__string("Cursor")]( prop ).AutoQ();
 
-				prop[ &IPropertyMap::Int ]( aloe__string("Cursor.SystemResource"),0 ) = Utils::copyCast< Types::Int >( IDC_SIZENS );
+				prop[ &IPropertyMap::Property ][ aloe__string("Cursor.SystemResource")] = Utils::copyCast< Types::Int >( IDC_SIZENS );
 				m_cursorNS = Root[ &IFactory::Create ][aloe__string("Cursor")]( prop ).AutoQ();
 
-				prop[ &IPropertyMap::Int ]( aloe__string("Cursor.SystemResource"),0 ) = Utils::copyCast< Types::Int >( IDC_SIZEWE );
+				prop[ &IPropertyMap::Property ][ aloe__string("Cursor.SystemResource")] = Utils::copyCast< Types::Int >( IDC_SIZEWE );
 				m_cursorWE = Root[ &IFactory::Create ][aloe__string("Cursor")]( prop ).AutoQ();
 
-				prop[ &IPropertyMap::String ](aloe__string("Bitmap.Filename"),0) = aloe__string("backImage.bmp");
+				prop[ &IPropertyMap::Property ][aloe__string("Bitmap.Filename")] = aloe__string("backImage.bmp");
 				m_bitmapBackImage = Root[ &IFactory::Create ][aloe__string("Bitmap")]( prop ).AutoQ();
 
 			} aloe__finish;

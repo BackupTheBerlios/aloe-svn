@@ -4,79 +4,34 @@
 
 namespace Aloe {
     namespace Win32 {
-        struct CPropertyMap
-            : Detail::Implementation
-            < CPropertyMap
-            , Detail::Interfaces< IPropertyMap >
-            , Detail::Bases< Detail::CRefCount >
-            , 0x1001 >
-        {
-            CPropertyMapTpl< Types::Int > m_mapInt;
-            CPropertyMapTpl< Types::Float > m_mapFloat;
-            CPropertyMapTpl< Types::String > m_mapString;
-            CPropertyMapTpl< Utils::SmartPtr<> > m_mapObject;
-            
-            aloe__prop_map_imp_put( IPropertyMap, Int, index, value )
-            {
-                m_mapInt.PutProperty( index, value );
-            }
+		struct CPropertyMap
+			: Detail::Implementation
+			< CPropertyMap
+			, Detail::Interfaces< IPropertyMap >
+			, Detail::Bases< Detail::CRefCount >
+			, 0x1001 >
+		{
+			typedef std::map< AutoObjectRef, AutoObjectRef > Map_t;
+			Map_t m_map;
+			
+			aloe__prop_map_imp_put( IPropertyMap, Property, index, value )
+			{
+				m_map[ index ] = value;
+			}
+			
+			aloe__prop_map_imp_get( IPropertyMap, Property, index )
+			{
+				Map_t::iterator i = m_map.find( index );
+				if ( i == m_map.end() )
+				{
+					//throw Errors::Error_BadArrayIndex();
+					return ObjectRef();
+				}
+				return i->second;
+			}
+		};// CPropertyMap
 
-            aloe__prop_map_imp_put( IPropertyMap, Float, index, value )
-            {
-                m_mapFloat.PutProperty( index, value );
-            }
 
-            aloe__prop_map_imp_put( IPropertyMap, String, index, value )
-            {
-                m_mapString.PutProperty( index, value );
-            }
-
-            aloe__prop_map_imp_put( IPropertyMap, Object, index, value )
-            {
-                m_mapObject.PutProperty( index, value );
-            }
-
-            aloe__prop_map_imp_get( IPropertyMap, Int, index )
-            {
-                Types::Int value;
-                if ( !m_mapInt.GetProperty( index, value ))
-                {
-                    return Types::None();
-                }
-                return value;
-            }
-
-            aloe__prop_map_imp_get( IPropertyMap, Float, index )
-            {
-                Types::Float value;
-                if ( !m_mapFloat.GetProperty( index, value ))
-                {
-                    return Types::None();
-                }
-                return value;
-            }
-            
-            aloe__prop_map_imp_get( IPropertyMap, String, index )
-            {
-                Types::String value;
-                if ( !m_mapString.GetProperty( index, value ))
-                {
-                    return Types::String();
-                }
-                return value;
-            }
-            
-            aloe__prop_map_imp_get( IPropertyMap, Object, index )
-            {
-                Utils::SmartPtr<> value;
-                if ( !m_mapObject.GetProperty( index, value ))
-                {
-                    return Types::None();
-                }
-                return value;
-            }
-
-        };//CPropertyMap
 
         struct CFactory
             : Detail::Implementation
@@ -164,17 +119,15 @@ namespace Aloe {
                         {
                             return (new CPen)->__init__();
                         }
-                        Types::Int color[] = {
-                            propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Color"), 1 ),
-                            propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Color"), 2 ),
-                            propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Color"), 3 )
-                        };
+						Types::Color32 color = propMap[ &IPropertyMap::Property ][ aloe__string("Pen.Color") ].value();
+						Types::Long style = propMap[ &IPropertyMap::Property ][ aloe__string("Pen.Style") ].value();
+						Types::Long width = propMap[ &IPropertyMap::Property ][ aloe__string("Pen.Width") ].value();
 
                         LOGPEN logPen;
-                        logPen.lopnStyle = propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Style"), 0 );
-                        logPen.lopnWidth.x = propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Width"), 0 );
-                        logPen.lopnWidth.y = propMap[ &IPropertyMap::Int ]( aloe__string("Pen.Width"), 1 );
-                        logPen.lopnColor = RGB( color[0], color[1], color[2] );
+                        logPen.lopnStyle = style;
+                        logPen.lopnWidth.x = width;
+                        logPen.lopnWidth.y = width;
+                        logPen.lopnColor = RGB( color.Redub(), color.Greenub(), color.Blueub() );
 
                         ::HPEN hPen = ::CreatePenIndirect( &logPen );
                         return ( new CGDIPen )->__init__( hPen, true );
@@ -185,26 +138,35 @@ namespace Aloe {
                         {
                             return (new CBrush)->__init__();
                         }
-
-                        Types::Int color[] = {
-                            propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Color"), 1 ),
-                            propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Color"), 2 ),
-                            propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Color"), 3 )
-                        };
+						
+						Types::Color32 color = propMap[ &IPropertyMap::Property ][ aloe__string("Brush.Color") ].value();
+						Types::Long style = propMap[ &IPropertyMap::Property ][ aloe__string("Brush.Style") ].value();
 
                         LOGBRUSH logBrush;
-                        logBrush.lbStyle = propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Style"), 0 );
-                        logBrush.lbColor = RGB( color[0], color[1], color[2] );
+                        logBrush.lbStyle = style;
+                        logBrush.lbColor = RGB( color.Redub(), color.Greenub(), color.Blueub() );
 
                         switch( logBrush.lbStyle )
                         {
                             case BS_DIBPATTERN:
                             case BS_DIBPATTERN8X8:
                             case BS_DIBPATTERNPT:
-                                logBrush.lbHatch = Utils::copyCast< ::LONG >(propMap[ &IPropertyMap::Object ]( aloe__string("Brush.Bitmap"), 0 )[ &IBitmap::HBitmap ].value());
+								{
+									Utils::SmartPtr< IRaster > bitmap;
+									if ( propMap[ &IPropertyMap::Property ][ aloe__string("Brush.Bitmap") ].value().get( &bitmap ))
+									{
+										logBrush.lbHatch = Utils::copyCast< ::LONG >( bitmap[ &IBitmap::HBitmap ].value() );
+									}
+								}
                                 break;
                             default:
-                                logBrush.lbHatch = propMap[ &IPropertyMap::Int ]( aloe__string("Brush.Hatch"), 0 );
+								{
+									Types::Long lh;
+									if (propMap[ &IPropertyMap::Property ][ aloe__string("Brush.Hatch") ].value().get( &lh ))
+									{
+										logBrush.lbHatch = lh;
+									}
+								}
                         };
 
                         HBRUSH hBr = ::CreateBrushIndirect( &logBrush );
@@ -232,11 +194,11 @@ namespace Aloe {
                         UINT uType = IMAGE_BITMAP;
                         UINT fuLoad = 0;
 
-                        res = propMap[ &IPropertyMap::Int ]( aloe__string("Bitmap.Resource"), 0 );
+                        propMap[ &IPropertyMap::Property ][ aloe__string("Bitmap.Resource") ].value().get( &res );
                         
                         if ( !res )
                         {
-                            name = propMap[ &IPropertyMap::String ]( aloe__string("Bitmap.Resource"), 0 );
+                            propMap[ &IPropertyMap::Property ][ aloe__string("Bitmap.Resource") ].value().get( &name );
                             lpszName = (WCHAR*)(name.c_str());
                         }
                         else {
@@ -245,7 +207,7 @@ namespace Aloe {
 
                         if ( !res && name.empty() )
                         {
-                            name = propMap[ &IPropertyMap::String ]( aloe__string("Bitmap.Filename"), 0 );
+                            propMap[ &IPropertyMap::Property ][ aloe__string("Bitmap.Filename") ].value().get( &name );
                             lpszName = (WCHAR*)(name.c_str());
                             fuLoad |= LR_LOADFROMFILE;
                             fuLoad |= LR_CREATEDIBSECTION;
@@ -279,15 +241,15 @@ namespace Aloe {
                         ::HINSTANCE hInstance = (::HINSTANCE)NULL;
                         ::HCURSOR hCursor = (::HCURSOR)NULL;
 
-                        res = propMap[ &IPropertyMap::Int ]( aloe__string("Cursor.SystemResource"), 0 );
+                        propMap[ &IPropertyMap::Property ][ aloe__string("Cursor.SystemResource") ].value().get( &res );
 
                         if ( !res )
                         {
-                            res = propMap[ &IPropertyMap::Int ]( aloe__string("Cursor.Resource"), 0 );
+                            propMap[ &IPropertyMap::Property ][ aloe__string("Cursor.Resource") ].value().get( &res );
                             
                             if ( !res )
                             {
-                                name = propMap[ &IPropertyMap::String ]( aloe__string("Cursor.Resource"), 0 );
+                                propMap[ &IPropertyMap::Property ][ aloe__string("Cursor.Resource") ].value().get( &name );
                                 if ( !name.empty() )
                                 {
                                     lpszName = (WCHAR*)(name.c_str());
@@ -312,7 +274,7 @@ namespace Aloe {
                         }
                         else
                         {
-                            name = propMap[ &IPropertyMap::String ]( aloe__string("Cursor.Filename"), 0 );
+                            propMap[ &IPropertyMap::Property ][ aloe__string("Cursor.Filename") ].value().get( &name );
                             lpszName = (WCHAR*)(name.c_str());
                             bFromFile = true;
                        

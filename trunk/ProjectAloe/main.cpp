@@ -80,7 +80,6 @@ namespace {
 	};
 };//using Aloe
 
-
 int main()
 {
     aloe__try {
@@ -115,19 +114,20 @@ int main()
                 frame[ &IFrameClient::Frame ] = wnd.AutoQ();
 
 				Utils::SmartPtr< IPropertyMap > prop  = Root[ &IFactory::Create ][ ClsID_PropertyMap ]().AutoQ();
-				prop[ &IPropertyMap::String ][ ProID_BitmapFilename ] = aloe__string("buttonNormal.bmp");
-				prop[ &IPropertyMap::Object ][ ProID_ButtonBitmapNormal ] = Root[ &IFactory::Create ][ ClsID_Bitmap ]( prop );
-				prop[ &IPropertyMap::String ][ ProID_BitmapFilename ] = aloe__string("buttonHighlight.bmp");
-				prop[ &IPropertyMap::Object ][ ProID_ButtonBitmapHighlight ] = Root[ &IFactory::Create ][ ClsID_Bitmap ]( prop );
-				prop[ &IPropertyMap::String ][ ProID_BitmapFilename ] = aloe__string("buttonPressed.bmp");
-				prop[ &IPropertyMap::Object ][ ProID_ButtonBitmapPressed ] = Root[ &IFactory::Create ][ ClsID_Bitmap ]( prop );
+				
+				prop[ &IPropertyMap::Property ][ ProID_BitmapFilename ] = aloe__string("buttonNormal.bmp");
+				prop[ &IPropertyMap::Property ][ ProID_ButtonBitmapNormal ] = Root[ &IFactory::Create ][ ClsID_Bitmap ]( prop );
+				prop[ &IPropertyMap::Property ][ ProID_BitmapFilename ] = aloe__string("buttonHighlight.bmp");
+				prop[ &IPropertyMap::Property ][ ProID_ButtonBitmapHighlight ] = Root[ &IFactory::Create ][ ClsID_Bitmap ]( prop );
+				prop[ &IPropertyMap::Property ][ ProID_BitmapFilename ] = aloe__string("buttonPressed.bmp");
+				prop[ &IPropertyMap::Property ][ ProID_ButtonBitmapPressed ] = Root[ &IFactory::Create ][ ClsID_Bitmap ]( prop );
 				
 				Utils::SmartPtr< IFont > font = Root[ &IFactory::Create ][aloe__string("Font")]().AutoQ();
 				font[ &IFont::Family ] = aloe__string("Arial");
 				font[ &IFont::Size ] = 20;
 				font[ &IFont::Weight ] = FW_BOLD;
 				font[ &IFont::Encoding ] = EASTEUROPE_CHARSET;
-				prop[ &IPropertyMap::Object ][ ProID_ButtonFont ] = font;
+				prop[ &IPropertyMap::Property ][ ProID_ButtonFont ] = font;
 
 				Utils::SmartPtr<> button1 =
 					CreateButton( wnd.AutoQ(), frame,
