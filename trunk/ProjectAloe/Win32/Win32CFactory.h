@@ -541,7 +541,7 @@ namespace Aloe {
                 {
                     if ( L':' == path[i] )
                     {
-                        wcscat( buffer, path );
+                        wcscat_s( buffer, MAX_PATH, path );
                         return buffer;
                     }
                 }
@@ -602,7 +602,7 @@ namespace Aloe {
                 }
                 else
                 {
-                    wcscat( buffer, path );
+                    wcscat_s( buffer, MAX_PATH, path );
                 }
 
                 return buffer;

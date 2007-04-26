@@ -233,7 +233,7 @@ namespace Aloe {
 
 #define aloe__report( S ) { \
     char buffer[1024] = {0,}; \
-    _snprintf( buffer, 1024, "%s(%i): %s\n", __FILE__, __LINE__, S ); \
+    _snprintf_s( buffer, 1024, _TRUNCATE, "%s(%i): %s\n", __FILE__, __LINE__, S ); \
     aloe__debugOut( buffer ); }
 
 #define aloe__try \
@@ -775,7 +775,7 @@ namespace Aloe {
                 {
                     Types::String argString = Utils::Format( args );
                     char buffer[1024] = {0,};
-                    _snprintf( buffer, 1024, "Event: %s %S\n", name, argString.c_str() );
+                    _snprintf_s( buffer, 1024, _TRUNCATE, "Event: %s %S\n", name, argString.c_str() );
                     aloe__debugOut( buffer );
                 }
 #endif

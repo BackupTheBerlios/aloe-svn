@@ -803,11 +803,7 @@ namespace Aloe {
                     logFont.lfWeight = m_weight;
                     logFont.lfItalic = (m_slant > 500 ? TRUE : FALSE);
                     logFont.lfEscapement = m_rotation;
-#ifdef WIN32
-                    swprintf( (wchar_t*)(logFont.lfFaceName), m_family.c_str() );
-#else
                     wprintf( (wchar_t*)(logFont.lfFaceName), m_family.c_str() );
-#endif
                     logFont.lfCharSet = m_encoding;
                     ::HFONT hFont = ::CreateFontIndirect( &logFont );
                     m_gdi = ( new CGDIFont )->__init__( hFont, true );
