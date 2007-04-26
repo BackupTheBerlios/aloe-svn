@@ -3,21 +3,19 @@
 
 #include "Aloe/aloeTypes.h"
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 namespace Aloe {
     
     namespace Types {
         
         typedef WideChar CharType;
-	typedef ::std::basic_string< CharType > String;
-	
+        typedef std::basic_string< CharType > String;
 #define aloe__string( t ) Aloe::Types::String( L##t )
-
-	typedef ::std::basic_stringstream< CharType > StringStream;
-	typedef ::std::basic_istream< CharType > StreamIn;
-	typedef ::std::basic_ostream< CharType > StreamOut;
+        typedef std::basic_stringstream< CharType > StringStream;
+        typedef std::basic_istream< CharType > StreamIn;
+        typedef std::basic_ostream< CharType > StreamOut;
             
     };//Types
 
@@ -49,6 +47,82 @@ namespace Aloe {
             return str;
         }
 
+        inline Aloe::Types::String Cat( Aloe::Types::String &out, const Aloe::Types::String &in )
+        {
+            if ( !in.empty() )
+            {
+                out += aloe__string(", ");
+                if ( Aloe::Types::String::npos == in.find( aloe__string(",") ))
+                {
+                    out += in;
+                }
+                else
+                {
+                    out += aloe__string("( ");
+                    out += in;
+                    out += aloe__string(" )");
+                }
+            }
+            return out;
+        }
+        
+        template< ALOE_PP_TEMPLATE_MAX( NONE, COMMA, class, B,, ) >
+		inline Aloe::Types::String Format( const Aloe::Types::Tuple< ALOE_PP_TEMPLATE_MAX( NONE, COMMA, getClass, B,, ) > &t
+                , const Aloe::Types::String &fmt = Aloe::Types::String() )
+        {
+            return aloe__string("(") + Cat( Cat( Cat( Cat( Cat( Cat( Cat( Cat(
+                                                    Format( t.m_1, fmt ),
+                                                    Format( t.m_2, fmt )),
+                                                Format( t.m_3 )),
+                                            Format( t.m_4 )),
+                                        Format( t.m_5 )),
+                                    Format( t.m_6 )),
+                                Format( t.m_7 )),
+                            Format( t.m_8 )),
+                        Format( t.m_9 )) + aloe__string(" )");
+        }
+        
+        template< class Interface, class Policy >
+        inline Aloe::Types::String Format( const Aloe::Utils::SmartPtr< Interface, Policy > &x, const Aloe::Types::String &fmt = Aloe::Types::String() )
+        {
+            Aloe::Types::StringStream ss;
+            IProvider *ptr = x.get();
+            ss << aloe__string("<") << ptr << aloe__string(">");
+            return ss.str();
+        }
+        
+        template< class Type >
+        inline Aloe::Types::String Format( const Aloe::Utils::ArrayOf< Type > &x, const Aloe::Types::String &fmt = Aloe::Types::String() )
+        {
+            return aloe__string("[]");
+        }
+
+        inline Aloe::Types::String Format( Aloe::Types::None x, const Aloe::Types::String &fmt = Aloe::Types::String() )
+        {
+            return aloe__string("");
+        }
+        
+        inline Aloe::Types::String Format( Aloe::Types::Int x, const Aloe::Types::String &fmt = Aloe::Types::String() )
+        {
+            Aloe::Types::StringStream ss;
+            ss << x;
+            return ss.str();
+        }
+
+        inline Aloe::Types::String Format( Aloe::Types::UInt x, const Aloe::Types::String &fmt = Aloe::Types::String() )
+        {
+            Aloe::Types::StringStream ss;
+            ss << x;
+            return ss.str();
+        }
+
+        inline Aloe::Types::String Format( Aloe::Types::LongPointer x, const Aloe::Types::String &fmt = Aloe::Types::String() )
+        {
+            Aloe::Types::StringStream ss;
+			ss << x.getLong();
+            return ss.str();
+        }
+        
         inline Aloe::Types::String Format( const Aloe::Types::Point2i &pt, const Aloe::Types::String &fmt = Aloe::Types::String() )
         {
             Aloe::Types::StringStream ss;
